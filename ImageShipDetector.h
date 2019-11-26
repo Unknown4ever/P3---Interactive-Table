@@ -2,8 +2,11 @@
 using namespace cv;
 using namespace std;
 
-
-
+/*
+To get the information for the boat, the following code can be copied into the main code
+vector<vector<int>> boats;
+boats = scanForBoats(image);
+*/
 Mat makeMask(Mat image) {
 	Mat mask;
 
@@ -187,6 +190,7 @@ void printBoats(vector<vector<int>> boats) {
 	}
 }
 
+//Main function for returning vector for boats
 vector<vector<int>> scanForBoats(Mat image) {
 	Mat mask;
 	image.copyTo(mask);
