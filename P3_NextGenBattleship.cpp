@@ -79,9 +79,16 @@ int main()
 {
 	LoadShips();
 	ResetBoard();
+
+	//insert function here in the future for chaning between abilities
+	regularShot = false;
+	multiShot = true;
+	superMultiShot = false;
+	strafeRun = false;
+	scoutArea = false;
+
 	//displayImage("grid.png");
 	//displayImage("carrier.png");
-
 	//Loop through each player and place ships
 	for (int aPlayer = 1; aPlayer < 3; aPlayer++)
 	{
@@ -158,7 +165,6 @@ int main()
 													// ABILITIES //
 
 		//Regular shot
-		regularShot = false;
 		
 		if (regularShot == true) {
 
@@ -180,7 +186,6 @@ int main()
 
 		//Scout the enemy board and displays the ships for a few seconds
 		//Will be true when the correct shape is detected by the camera
-		scoutArea = true;
 
 		if (scoutArea == true) {
 
@@ -267,8 +272,6 @@ int main()
 			}
 	}
 
-		multiShot = false;
-
 		if (multiShot == true) {
 
 			if (player[enemyPlayer].grid[x - 1][y] == is_SHIP) { player[enemyPlayer].grid[x - 1][y] = HIT; }
@@ -298,7 +301,7 @@ int main()
 			}
 		}
 
-		superMultiShot = false; //Shoots in a 3x3 square
+		 //Shoots in a 3x3 square
 
 		if (superMultiShot == true) {
 
@@ -337,7 +340,7 @@ int main()
 			}
 		}
 
-		strafeRun = false; //Shoots in a line
+		 //Shoots in a line
 
 		if (strafeRun == true) {
 
@@ -411,7 +414,22 @@ bool GameOverCheck(int enemyPLAYER)
 
 bool UserInputAttack(int& x, int& y, int theplayer)
 {
-	cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO ATTACK: ";
+	if (scoutArea == true) {
+		cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO SCOUT: ";
+	}
+	else if (multiShot == true) {
+		cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO MULTISHOT: ";
+	}
+	else if (superMultiShot == true) {
+		cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO SUPERMULTISHOT: ";
+	}
+	else if (strafeRun == true) {
+		cout << "\nPLAYER" << theplayer << ", ENTER COORDINATES TO STRAFE RUN: ";
+	}
+	else {
+		cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO ATTACK: ";
+	}
+
 	bool goodInput = false;
 	cin >> x >> y;
 	if (x < 0
