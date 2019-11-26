@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <thread>
 #include <chrono>
 #include <string> 
@@ -15,10 +15,10 @@ const int BOARD_WIDTH = 20;
 const int BOARD_HEIGHT = 10;
 const int SHIP_TYPES = 4;
 
-const char isWATER = '~';
-const char isHIT = 'X';
-const char isSHIP = 'S';
-const char isMISS = 'O';
+const char WATER = '~';
+const char HIT = 'X';
+const char SHIIP = 'S';
+const char MISS = 'O';
 
 bool scoutArea = false;
 bool multiShot = false;
@@ -86,7 +86,7 @@ int main()
 	for (int aPlayer = 1; aPlayer < 3; aPlayer++)
 	{
 		//Loop through each ship type to place
-		for (int thisShip = 0; thisShip < SHIP_TYPES; ++thisShip)
+		for (int thSHIIP = 0; thSHIIP < SHIP_TYPES; ++thSHIIP)
 		{
 			//Display board
 			system("cls");
@@ -96,7 +96,7 @@ int main()
 			cout << "\n";
 			cout << "(Player " << aPlayer << ")\n\n";
 			cout << "Horizontal: 0, Vetical: 1, then enter X and Y coordinates\n";
-			cout << "Ship to place: " << ship[thisShip].name << " which has a length of " << ship[thisShip].length << "\n";
+			cout << "Ship to place: " << ship[thSHIIP].name << " which has a length of " << ship[thSHIIP].length << "\n";
 			cout << "Where do you want it placed? (specify direction first): \n";
 			
 
@@ -109,11 +109,11 @@ int main()
 			}
 
 			//Combine user data with "this ship" data
-			aShip.shipType.length = ship[thisShip].length;
-			aShip.shipType.name = ship[thisShip].name;
+			aShip.shipType.length = ship[thSHIIP].length;
+			aShip.shipType.name = ship[thSHIIP].name;
 
 			//Add the FIRST grid point to the current player's game board
-			player[aPlayer].grid[aShip.shipType.onGrid[0].X][aShip.shipType.onGrid[0].Y] = isSHIP;
+			player[aPlayer].grid[aShip.shipType.onGrid[0].X][aShip.shipType.onGrid[0].Y] = SHIIP;
 
 			//Determine ALL grid points based on length and direction
 			for (int i = 1; i < aShip.shipType.length; ++i)
@@ -128,7 +128,7 @@ int main()
 				}
 
 				//Add the REMAINING grid points to our current players game board
-				player[aPlayer].grid[aShip.shipType.onGrid[i].X][aShip.shipType.onGrid[i].Y] = isSHIP;
+				player[aPlayer].grid[aShip.shipType.onGrid[i].X][aShip.shipType.onGrid[i].Y] = SHIIP;
 
 			}
 			//Loop back through each ship type
@@ -162,14 +162,14 @@ int main()
 		
 		if (regularShot == true) {
 
-			if (player[enemyPlayer].grid[x][y] == isSHIP) {
-				player[enemyPlayer].grid[x][y] = isHIT;
+			if (player[enemyPlayer].grid[x][y] == SHIIP) {
+				player[enemyPlayer].grid[x][y] = HIT;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "BOOM"; std::this_thread::sleep_for(std::chrono::seconds(3));
 			}
-			if (player[enemyPlayer].grid[x][y] == isWATER) {
-				player[enemyPlayer].grid[x][y] = isMISS;
+			if (player[enemyPlayer].grid[x][y] == WATER) {
+				player[enemyPlayer].grid[x][y] = MISS;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "MISS";
@@ -184,36 +184,36 @@ int main()
 
 		if (scoutArea == true) {
 
-			if (player[enemyPlayer].grid[x - 1][y] == isSHIP) { player[enemyPlayer].grid[x - 1][y] = 's'; }
-			if (player[enemyPlayer].grid[x + 1][y] == isSHIP) { player[enemyPlayer].grid[x + 1][y] = 's'; }
-			if (player[enemyPlayer].grid[x][y - 1] == isSHIP) { player[enemyPlayer].grid[x][y - 1] = 's'; }
-			if (player[enemyPlayer].grid[x][y + 1] == isSHIP) { player[enemyPlayer].grid[x][y + 1] = 's'; }
+			if (player[enemyPlayer].grid[x - 1][y] == SHIIP) { player[enemyPlayer].grid[x - 1][y] = 's'; }
+			if (player[enemyPlayer].grid[x + 1][y] == SHIIP) { player[enemyPlayer].grid[x + 1][y] = 's'; }
+			if (player[enemyPlayer].grid[x][y - 1] == SHIIP) { player[enemyPlayer].grid[x][y - 1] = 's'; }
+			if (player[enemyPlayer].grid[x][y + 1] == SHIIP) { player[enemyPlayer].grid[x][y + 1] = 's'; }
 
-			if (player[enemyPlayer].grid[x + 2][y - 1] == isSHIP) { player[enemyPlayer].grid[x + 2][y - 1] = 's'; }
-			if (player[enemyPlayer].grid[x + 3][y - 1] == isSHIP) { player[enemyPlayer].grid[x + 3][y - 1] = 's'; }
+			if (player[enemyPlayer].grid[x + 2][y - 1] == SHIIP) { player[enemyPlayer].grid[x + 2][y - 1] = 's'; }
+			if (player[enemyPlayer].grid[x + 3][y - 1] == SHIIP) { player[enemyPlayer].grid[x + 3][y - 1] = 's'; }
 
-			if (player[enemyPlayer].grid[x + 2][y] == isSHIP) { player[enemyPlayer].grid[x + 2][y] = 's'; }
-			if (player[enemyPlayer].grid[x + 3][y] == isSHIP) { player[enemyPlayer].grid[x + 3][y] = 's'; }
+			if (player[enemyPlayer].grid[x + 2][y] == SHIIP) { player[enemyPlayer].grid[x + 2][y] = 's'; }
+			if (player[enemyPlayer].grid[x + 3][y] == SHIIP) { player[enemyPlayer].grid[x + 3][y] = 's'; }
 
-			if (player[enemyPlayer].grid[x + 2][y + 1] == isSHIP) { player[enemyPlayer].grid[x + 2][y + 1] = 's'; }
-			if (player[enemyPlayer].grid[x + 3][y + 1] == isSHIP) { player[enemyPlayer].grid[x + 3][y + 1] = 's'; }
+			if (player[enemyPlayer].grid[x + 2][y + 1] == SHIIP) { player[enemyPlayer].grid[x + 2][y + 1] = 's'; }
+			if (player[enemyPlayer].grid[x + 3][y + 1] == SHIIP) { player[enemyPlayer].grid[x + 3][y + 1] = 's'; }
 
-			if (player[enemyPlayer].grid[x - 1][y] == isWATER) { player[enemyPlayer].grid[x - 1][y] = '~'; }
-			if (player[enemyPlayer].grid[x + 1][y] == isWATER) { player[enemyPlayer].grid[x + 1][y] = '~'; }
-			if (player[enemyPlayer].grid[x][y - 1] == isWATER) { player[enemyPlayer].grid[x][y - 1] = '~'; }
-			if (player[enemyPlayer].grid[x][y + 1] == isWATER) { player[enemyPlayer].grid[x][y + 1] = '~'; }
+			if (player[enemyPlayer].grid[x - 1][y] == WATER) { player[enemyPlayer].grid[x - 1][y] = '~'; }
+			if (player[enemyPlayer].grid[x + 1][y] == WATER) { player[enemyPlayer].grid[x + 1][y] = '~'; }
+			if (player[enemyPlayer].grid[x][y - 1] == WATER) { player[enemyPlayer].grid[x][y - 1] = '~'; }
+			if (player[enemyPlayer].grid[x][y + 1] == WATER) { player[enemyPlayer].grid[x][y + 1] = '~'; }
 
-			if (player[enemyPlayer].grid[x + 2][y - 1] == isWATER) { player[enemyPlayer].grid[x + 2][y - 1] = '~'; }
-			if (player[enemyPlayer].grid[x + 3][y - 1] == isWATER) { player[enemyPlayer].grid[x + 3][y - 1] = '~'; }
+			if (player[enemyPlayer].grid[x + 2][y - 1] == WATER) { player[enemyPlayer].grid[x + 2][y - 1] = '~'; }
+			if (player[enemyPlayer].grid[x + 3][y - 1] == WATER) { player[enemyPlayer].grid[x + 3][y - 1] = '~'; }
 
-			if (player[enemyPlayer].grid[x + 2][y] == isWATER) { player[enemyPlayer].grid[x + 2][y] = '~'; }
-			if (player[enemyPlayer].grid[x + 3][y] == isWATER) { player[enemyPlayer].grid[x + 3][y] = '~'; }
+			if (player[enemyPlayer].grid[x + 2][y] == WATER) { player[enemyPlayer].grid[x + 2][y] = '~'; }
+			if (player[enemyPlayer].grid[x + 3][y] == WATER) { player[enemyPlayer].grid[x + 3][y] = '~'; }
 
-			if (player[enemyPlayer].grid[x + 2][y + 1] == isWATER) { player[enemyPlayer].grid[x + 2][y + 1] = '~'; }
-			if (player[enemyPlayer].grid[x + 3][y + 1] == isWATER) { player[enemyPlayer].grid[x + 3][y + 1] = '~'; }
+			if (player[enemyPlayer].grid[x + 2][y + 1] == WATER) { player[enemyPlayer].grid[x + 2][y + 1] = '~'; }
+			if (player[enemyPlayer].grid[x + 3][y + 1] == WATER) { player[enemyPlayer].grid[x + 3][y + 1] = '~'; }
 
 
-			if (player[enemyPlayer].grid[x][y] == isSHIP) {
+			if (player[enemyPlayer].grid[x][y] == SHIIP) {
 				player[enemyPlayer].grid[x][y] = 's';
 				system("cls");
 				DrawBoard(enemyPlayer);
@@ -221,7 +221,7 @@ int main()
 				std::this_thread::sleep_for(std::chrono::seconds(4));
 			}
 
-			if (player[enemyPlayer].grid[x][y] == isWATER) {
+			if (player[enemyPlayer].grid[x][y] == WATER) {
 				player[enemyPlayer].grid[x][y] = '~';
 				system("cls");
 				DrawBoard(enemyPlayer);
@@ -230,40 +230,40 @@ int main()
 			}
 
 			//Reseting the board after the scout ability
-			if (player[enemyPlayer].grid[x - 1][y] == 's') { player[enemyPlayer].grid[x - 1][y] = isSHIP; }
-			if (player[enemyPlayer].grid[x + 1][y] == 's') { player[enemyPlayer].grid[x + 1][y] = isSHIP; }
-			if (player[enemyPlayer].grid[x][y - 1] == 's') { player[enemyPlayer].grid[x][y - 1] = isSHIP; }
-			if (player[enemyPlayer].grid[x][y + 1] == 's') { player[enemyPlayer].grid[x][y + 1] = isSHIP; }
+			if (player[enemyPlayer].grid[x - 1][y] == 's') { player[enemyPlayer].grid[x - 1][y] = SHIIP; }
+			if (player[enemyPlayer].grid[x + 1][y] == 's') { player[enemyPlayer].grid[x + 1][y] = SHIIP; }
+			if (player[enemyPlayer].grid[x][y - 1] == 's') { player[enemyPlayer].grid[x][y - 1] = SHIIP; }
+			if (player[enemyPlayer].grid[x][y + 1] == 's') { player[enemyPlayer].grid[x][y + 1] = SHIIP; }
 
-			if (player[enemyPlayer].grid[x + 2][y - 1] == 's') { player[enemyPlayer].grid[x + 2][y - 1] = isSHIP; }
-			if (player[enemyPlayer].grid[x + 3][y - 1] == 's') { player[enemyPlayer].grid[x + 3][y - 1] = isSHIP; }
+			if (player[enemyPlayer].grid[x + 2][y - 1] == 's') { player[enemyPlayer].grid[x + 2][y - 1] = SHIIP; }
+			if (player[enemyPlayer].grid[x + 3][y - 1] == 's') { player[enemyPlayer].grid[x + 3][y - 1] = SHIIP; }
 
-			if (player[enemyPlayer].grid[x + 2][y] == 's') { player[enemyPlayer].grid[x + 2][y] = isSHIP; }
-			if (player[enemyPlayer].grid[x + 3][y] == 's') { player[enemyPlayer].grid[x + 3][y] = isSHIP; }
+			if (player[enemyPlayer].grid[x + 2][y] == 's') { player[enemyPlayer].grid[x + 2][y] = SHIIP; }
+			if (player[enemyPlayer].grid[x + 3][y] == 's') { player[enemyPlayer].grid[x + 3][y] = SHIIP; }
 
-			if (player[enemyPlayer].grid[x + 2][y + 1] == 's') { player[enemyPlayer].grid[x + 2][y + 1] = isSHIP; }
-			if (player[enemyPlayer].grid[x + 3][y + 1] == 's') { player[enemyPlayer].grid[x + 3][y + 1] = isSHIP; }
+			if (player[enemyPlayer].grid[x + 2][y + 1] == 's') { player[enemyPlayer].grid[x + 2][y + 1] = SHIIP; }
+			if (player[enemyPlayer].grid[x + 3][y + 1] == 's') { player[enemyPlayer].grid[x + 3][y + 1] = SHIIP; }
 
-			if (player[enemyPlayer].grid[x - 1][y] == '~') { player[enemyPlayer].grid[x - 1][y] = isWATER; }
-			if (player[enemyPlayer].grid[x + 1][y] == '~') { player[enemyPlayer].grid[x + 1][y] = isWATER; }
-			if (player[enemyPlayer].grid[x][y - 1] == '~') { player[enemyPlayer].grid[x][y - 1] = isWATER; }
-			if (player[enemyPlayer].grid[x][y + 1] == '~') { player[enemyPlayer].grid[x][y + 1] = isWATER; }
+			if (player[enemyPlayer].grid[x - 1][y] == '~') { player[enemyPlayer].grid[x - 1][y] = WATER; }
+			if (player[enemyPlayer].grid[x + 1][y] == '~') { player[enemyPlayer].grid[x + 1][y] = WATER; }
+			if (player[enemyPlayer].grid[x][y - 1] == '~') { player[enemyPlayer].grid[x][y - 1] = WATER; }
+			if (player[enemyPlayer].grid[x][y + 1] == '~') { player[enemyPlayer].grid[x][y + 1] = WATER; }
 
-			if (player[enemyPlayer].grid[x + 2][y - 1] == '~') { player[enemyPlayer].grid[x + 2][y - 1] = isWATER; }
-			if (player[enemyPlayer].grid[x + 3][y - 1] == '~') { player[enemyPlayer].grid[x + 3][y - 1] = isWATER; }
+			if (player[enemyPlayer].grid[x + 2][y - 1] == '~') { player[enemyPlayer].grid[x + 2][y - 1] = WATER; }
+			if (player[enemyPlayer].grid[x + 3][y - 1] == '~') { player[enemyPlayer].grid[x + 3][y - 1] = WATER; }
 
-			if (player[enemyPlayer].grid[x + 2][y] == '~') { player[enemyPlayer].grid[x + 2][y] = isWATER; }
-			if (player[enemyPlayer].grid[x + 3][y] == '~') { player[enemyPlayer].grid[x + 3][y] = isWATER; }
+			if (player[enemyPlayer].grid[x + 2][y] == '~') { player[enemyPlayer].grid[x + 2][y] = WATER; }
+			if (player[enemyPlayer].grid[x + 3][y] == '~') { player[enemyPlayer].grid[x + 3][y] = WATER; }
 
-			if (player[enemyPlayer].grid[x + 2][y + 1] == '~') { player[enemyPlayer].grid[x + 2][y + 1] = isWATER; }
-			if (player[enemyPlayer].grid[x + 3][y + 1] == '~') { player[enemyPlayer].grid[x + 3][y + 1] = isWATER; }
+			if (player[enemyPlayer].grid[x + 2][y + 1] == '~') { player[enemyPlayer].grid[x + 2][y + 1] = WATER; }
+			if (player[enemyPlayer].grid[x + 3][y + 1] == '~') { player[enemyPlayer].grid[x + 3][y + 1] = WATER; }
 
 			if (player[enemyPlayer].grid[x][y] == 's') {
-				player[enemyPlayer].grid[x][y] = isSHIP;
+				player[enemyPlayer].grid[x][y] = SHIIP;
 			}
 
 			if (player[enemyPlayer].grid[x][y] == '~') {
-				player[enemyPlayer].grid[x][y] = isWATER;
+				player[enemyPlayer].grid[x][y] = WATER;
 			}
 	}
 
@@ -271,26 +271,26 @@ int main()
 
 		if (multiShot == true) {
 
-			if (player[enemyPlayer].grid[x - 1][y] == isSHIP) { player[enemyPlayer].grid[x - 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x + 1][y] == isSHIP) { player[enemyPlayer].grid[x + 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x][y - 1] == isSHIP) { player[enemyPlayer].grid[x][y - 1] = isHIT; }
-			if (player[enemyPlayer].grid[x][y + 1] == isSHIP) { player[enemyPlayer].grid[x][y + 1] = isHIT; }
+			if (player[enemyPlayer].grid[x - 1][y] == SHIIP) { player[enemyPlayer].grid[x - 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x + 1][y] == SHIIP) { player[enemyPlayer].grid[x + 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x][y - 1] == SHIIP) { player[enemyPlayer].grid[x][y - 1] = HIT; }
+			if (player[enemyPlayer].grid[x][y + 1] == SHIIP) { player[enemyPlayer].grid[x][y + 1] = HIT; }
 
-			if (player[enemyPlayer].grid[x - 1][y] == isWATER) { player[enemyPlayer].grid[x - 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x + 1][y] == isWATER) { player[enemyPlayer].grid[x + 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x][y - 1] == isWATER) { player[enemyPlayer].grid[x][y - 1] = isMISS; }
-			if (player[enemyPlayer].grid[x][y + 1] == isWATER) { player[enemyPlayer].grid[x][y + 1] = isMISS; }
+			if (player[enemyPlayer].grid[x - 1][y] == WATER) { player[enemyPlayer].grid[x - 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x + 1][y] == WATER) { player[enemyPlayer].grid[x + 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x][y - 1] == WATER) { player[enemyPlayer].grid[x][y - 1] = MISS; }
+			if (player[enemyPlayer].grid[x][y + 1] == WATER) { player[enemyPlayer].grid[x][y + 1] = MISS; }
 
-			if (player[enemyPlayer].grid[x][y] == isSHIP) {
-				player[enemyPlayer].grid[x][y] = isHIT;
+			if (player[enemyPlayer].grid[x][y] == SHIIP) {
+				player[enemyPlayer].grid[x][y] = HIT;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "BOOM";
 				std::this_thread::sleep_for(std::chrono::seconds(3));
 			}	
 
-			if (player[enemyPlayer].grid[x][y] == isWATER) {
-				player[enemyPlayer].grid[x][y] = isMISS;
+			if (player[enemyPlayer].grid[x][y] == WATER) {
+				player[enemyPlayer].grid[x][y] = MISS;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "MISS";
@@ -302,34 +302,34 @@ int main()
 
 		if (superMultiShot == true) {
 
-			if (player[enemyPlayer].grid[x - 1][y] == isSHIP) { player[enemyPlayer].grid[x - 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x + 1][y] == isSHIP) { player[enemyPlayer].grid[x + 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x][y - 1] == isSHIP) { player[enemyPlayer].grid[x][y - 1] = isHIT; }
-			if (player[enemyPlayer].grid[x][y + 1] == isSHIP) { player[enemyPlayer].grid[x][y + 1] = isHIT; }
-			if (player[enemyPlayer].grid[x - 1][y - 1] == isSHIP) { player[enemyPlayer].grid[x - 1][y - 1] = isHIT; }
-			if (player[enemyPlayer].grid[x + 1][y - 1] == isSHIP) { player[enemyPlayer].grid[x + 1][y - 1] = isHIT; }
-			if (player[enemyPlayer].grid[x - 1][y + 1] == isSHIP) { player[enemyPlayer].grid[x - 1][y + 1] = isHIT; }
-			if (player[enemyPlayer].grid[x + 1][y + 1] == isSHIP) { player[enemyPlayer].grid[x + 1][y + 1] = isHIT; }
+			if (player[enemyPlayer].grid[x - 1][y] == SHIIP) { player[enemyPlayer].grid[x - 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x + 1][y] == SHIIP) { player[enemyPlayer].grid[x + 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x][y - 1] == SHIIP) { player[enemyPlayer].grid[x][y - 1] = HIT; }
+			if (player[enemyPlayer].grid[x][y + 1] == SHIIP) { player[enemyPlayer].grid[x][y + 1] = HIT; }
+			if (player[enemyPlayer].grid[x - 1][y - 1] == SHIIP) { player[enemyPlayer].grid[x - 1][y - 1] = HIT; }
+			if (player[enemyPlayer].grid[x + 1][y - 1] == SHIIP) { player[enemyPlayer].grid[x + 1][y - 1] = HIT; }
+			if (player[enemyPlayer].grid[x - 1][y + 1] == SHIIP) { player[enemyPlayer].grid[x - 1][y + 1] = HIT; }
+			if (player[enemyPlayer].grid[x + 1][y + 1] == SHIIP) { player[enemyPlayer].grid[x + 1][y + 1] = HIT; }
 
-			if (player[enemyPlayer].grid[x - 1][y] == isWATER) { player[enemyPlayer].grid[x - 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x + 1][y] == isWATER) { player[enemyPlayer].grid[x + 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x][y - 1] == isWATER) { player[enemyPlayer].grid[x][y - 1] = isMISS; }
-			if (player[enemyPlayer].grid[x][y + 1] == isWATER) { player[enemyPlayer].grid[x][y + 1] = isMISS; }
-			if (player[enemyPlayer].grid[x - 1][y - 1] == isWATER) { player[enemyPlayer].grid[x - 1][y - 1] = isMISS; }
-			if (player[enemyPlayer].grid[x + 1][y - 1] == isWATER) { player[enemyPlayer].grid[x + 1][y - 1] = isMISS; }
-			if (player[enemyPlayer].grid[x - 1][y + 1] == isWATER) { player[enemyPlayer].grid[x - 1][y + 1] = isMISS; }
-			if (player[enemyPlayer].grid[x + 1][y + 1] == isWATER) { player[enemyPlayer].grid[x + 1][y + 1] = isMISS; }
+			if (player[enemyPlayer].grid[x - 1][y] == WATER) { player[enemyPlayer].grid[x - 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x + 1][y] == WATER) { player[enemyPlayer].grid[x + 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x][y - 1] == WATER) { player[enemyPlayer].grid[x][y - 1] = MISS; }
+			if (player[enemyPlayer].grid[x][y + 1] == WATER) { player[enemyPlayer].grid[x][y + 1] = MISS; }
+			if (player[enemyPlayer].grid[x - 1][y - 1] == WATER) { player[enemyPlayer].grid[x - 1][y - 1] = MISS; }
+			if (player[enemyPlayer].grid[x + 1][y - 1] == WATER) { player[enemyPlayer].grid[x + 1][y - 1] = MISS; }
+			if (player[enemyPlayer].grid[x - 1][y + 1] == WATER) { player[enemyPlayer].grid[x - 1][y + 1] = MISS; }
+			if (player[enemyPlayer].grid[x + 1][y + 1] == WATER) { player[enemyPlayer].grid[x + 1][y + 1] = MISS; }
 
-			if (player[enemyPlayer].grid[x][y] == isSHIP) {
-				player[enemyPlayer].grid[x][y] = isHIT;
+			if (player[enemyPlayer].grid[x][y] == SHIIP) {
+				player[enemyPlayer].grid[x][y] = HIT;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "BOOM";
 				std::this_thread::sleep_for(std::chrono::seconds(3));
 			}
 
-			if (player[enemyPlayer].grid[x][y] == isWATER) {
-				player[enemyPlayer].grid[x][y] = isMISS;
+			if (player[enemyPlayer].grid[x][y] == WATER) {
+				player[enemyPlayer].grid[x][y] = MISS;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "MISS";
@@ -341,26 +341,26 @@ int main()
 
 		if (strafeRun == true) {
 
-			if (player[enemyPlayer].grid[x - 1][y] == isSHIP) { player[enemyPlayer].grid[x - 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x + 1][y] == isSHIP) { player[enemyPlayer].grid[x + 1][y] = isHIT; }
-			if (player[enemyPlayer].grid[x - 2][y] == isSHIP) { player[enemyPlayer].grid[x - 2][y] = isHIT; }
-			if (player[enemyPlayer].grid[x + 2][y] == isSHIP) { player[enemyPlayer].grid[x + 2][y] = isHIT; }
+			if (player[enemyPlayer].grid[x - 1][y] == SHIIP) { player[enemyPlayer].grid[x - 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x + 1][y] == SHIIP) { player[enemyPlayer].grid[x + 1][y] = HIT; }
+			if (player[enemyPlayer].grid[x - 2][y] == SHIIP) { player[enemyPlayer].grid[x - 2][y] = HIT; }
+			if (player[enemyPlayer].grid[x + 2][y] == SHIIP) { player[enemyPlayer].grid[x + 2][y] = HIT; }
 			
-			if (player[enemyPlayer].grid[x - 1][y] == isWATER) { player[enemyPlayer].grid[x - 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x + 1][y] == isWATER) { player[enemyPlayer].grid[x + 1][y] = isMISS; }
-			if (player[enemyPlayer].grid[x - 2][y] == isWATER) { player[enemyPlayer].grid[x - 2][y] = isMISS; }
-			if (player[enemyPlayer].grid[x + 2][y] == isWATER) { player[enemyPlayer].grid[x + 2][y] = isMISS; }
+			if (player[enemyPlayer].grid[x - 1][y] == WATER) { player[enemyPlayer].grid[x - 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x + 1][y] == WATER) { player[enemyPlayer].grid[x + 1][y] = MISS; }
+			if (player[enemyPlayer].grid[x - 2][y] == WATER) { player[enemyPlayer].grid[x - 2][y] = MISS; }
+			if (player[enemyPlayer].grid[x + 2][y] == WATER) { player[enemyPlayer].grid[x + 2][y] = MISS; }
 			
-			if (player[enemyPlayer].grid[x][y] == isSHIP) {
-				player[enemyPlayer].grid[x][y] = isHIT;
+			if (player[enemyPlayer].grid[x][y] == SHIIP) {
+				player[enemyPlayer].grid[x][y] = HIT;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "BOOM";
 				std::this_thread::sleep_for(std::chrono::seconds(3));
 			}
 
-			if (player[enemyPlayer].grid[x][y] == isWATER) {
-				player[enemyPlayer].grid[x][y] = isMISS;
+			if (player[enemyPlayer].grid[x][y] == WATER) {
+				player[enemyPlayer].grid[x][y] = MISS;
 				system("cls");
 				DrawBoard(enemyPlayer);
 				cout << "MISS";
@@ -397,7 +397,7 @@ bool GameOverCheck(int enemyPLAYER)
 	for (int w = 0; w < BOARD_WIDTH; w++) {
 		for (int h = 0; h < BOARD_HEIGHT; h++) {
 			//If any ships remain, game is still not over
-			if (player[enemyPLAYER].grid[w][h] = isSHIP)
+			if (player[enemyPLAYER].grid[w][h] = SHIIP)
 			{
 				winner = false;
 				return winner;
@@ -462,7 +462,7 @@ void ResetBoard()
 		//For each grid point, set contents to 'water'
 		for (int w = 0; w <= BOARD_WIDTH; w++) {
 			for (int h = 0; h <= BOARD_HEIGHT; h++) {
-				player[playerIndex].grid[w][h] = isWATER;
+				player[playerIndex].grid[w][h] = WATER;
 			}
 		}
 		//Loop back to next player -> playerIndex 1, 2
@@ -503,21 +503,21 @@ void DrawBoard(int thisPlayer)
 			if (guessingStage == false) cout << player[thisPlayer].grid[w][h] << "  ";
 
 			/*
-			if (guessingStage == true && player[thisPlayer].grid[0][0] == isHIT) {
+			if (guessingStage == true && player[thisPlayer].grid[0][0] == HIT) {
 				player[thisPlayer].grid[0][0] = 'x';
 			}
-			else if (guessingStage == true && player[thisPlayer].grid[0][0] == isMISS) {
+			else if (guessingStage == true && player[thisPlayer].grid[0][0] == MISS) {
 				player[thisPlayer].grid[0][0] = 'o';
 			}
 			*/
 
-			if (guessingStage == true && player[thisPlayer].grid[w][h] != isSHIP)
+			if (guessingStage == true && player[thisPlayer].grid[w][h] != SHIIP)
 			{
 				cout << player[thisPlayer].grid[w][h] << "  ";
 			}
-			else if (guessingStage == true && player[thisPlayer].grid[w][h] == isSHIP)
+			else if (guessingStage == true && player[thisPlayer].grid[w][h] == SHIIP)
 			{
-				cout << isWATER << "  ";
+				cout << WATER << "  ";
 			}
 			if (w == BOARD_WIDTH - 1) cout << endl;
 		}
