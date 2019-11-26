@@ -165,7 +165,7 @@ vector<vector<Point>> shapeDetection(Mat mask, Mat image) {
 
 	Canny(mask, canny_output, thresh, thresh * 2, 3);
 	findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
-
+	/*
 	Mat dst;
 	canny_output.copyTo(dst);
 
@@ -179,6 +179,7 @@ vector<vector<Point>> shapeDetection(Mat mask, Mat image) {
 	}
 	cvtColor(dst, dst, COLOR_BayerBG2BGR);
 	dst = combineImage(image, dst, 0, 0);
+	*/
 	return contours;
 }
 
