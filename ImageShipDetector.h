@@ -4,16 +4,13 @@
 using namespace cv;
 using namespace std;
 
-/*
-To get the information for the boat, the following code can be copied into the main code
-vector<vector<int>> boats;
-boats = scanForBoats(image);
-*/
-Mat makeMask(Mat image) {
+
+
+Mat makeMask(Mat image, int lowLim1[], int upLim1[]) {
 	Mat mask;
 
-	int upLim[] = { 90,240,240 };
-	int lowLim[] = { 40,50,0 };
+	int upLim[] = { upLim1[0],upLim1[1],upLim1[2] };
+	int lowLim[] = { lowLim1[0],lowLim1[1],lowLim1[2] };
 
 	if (image.empty()) {
 		//cout << "Could no find image" << endl;
@@ -22,9 +19,10 @@ Mat makeMask(Mat image) {
 		cvtColor(image, image, COLOR_BGR2HSV);
 		image.copyTo(mask);
 		inRange(mask, Scalar(lowLim[0], lowLim[1], lowLim[2]), Scalar(upLim[0], upLim[1], upLim[2]), mask);
-
-		erode(mask, mask, Mat(), Point(-1, -1), 3);
-		dilate(mask, mask, Mat(), Point(-1, -1), 4);
+		
+		erode(mask, mask, Mat(), Point(-1, -1), 1);
+		dilate(mask, mask, Mat(), Point(-1, -1), 1);
+		
 	}
 	return mask;
 }
@@ -144,14 +142,18 @@ Mat combineImage(Mat image1, Mat image2, int xStart, int yStart) {
 		for (int y = 0; y < h; y++) {
 			Vec3b bgr = image2.at<Vec3b>(y, x);
 			if (!(bgr[0] == 0 & bgr[1] == 0 & bgr[2] == 0)) {
-				image1.at<Vec3b>(y + yStart, x + xStart) = image2.at<Vec3b>(y, x);
+				if (x+xStart >= 0 & image1.cols > x+xStart & y+yStart >= 0 & image1.rows > y+yStart) {
+					image1.at<Vec3b>(y + yStart, x + xStart) = image2.at<Vec3b>(y, x);
+				}
+				else {
+					cout << "Imagecombiner: ERROR, Image out of range" << endl;
+				}
 			}
 		}
 	}
 
 	return image1;
 }
-
 
 vector<vector<Point>> shapeDetection(Mat mask, Mat image) {
 	Mat canny_output;
@@ -162,10 +164,10 @@ vector<vector<Point>> shapeDetection(Mat mask, Mat image) {
 	vector<vector<Point> > contours;
 	vector<Point> approx;
 	vector<Vec4i> hierarchy;
-
 	Canny(mask, canny_output, thresh, thresh * 2, 3);
 	findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 	/*
+	
 	Mat dst;
 	canny_output.copyTo(dst);
 
@@ -193,11 +195,12 @@ void printBoats(vector<vector<int>> boats) {
 	}
 }
 
-//Main function for returning vector for boats
 vector<vector<int>> scanForBoats(Mat image) {
 	Mat mask;
 	image.copyTo(mask);
-	mask = makeMask(mask);
+	int upLim[] = { 90,240,240 };
+	int lowLim[] = { 40,50,0 };
+	mask = makeMask(mask, lowLim, upLim);
 	vector<vector<int>> boats;
 	vector<vector<Point>> contours;
 	contours = shapeDetection(mask, image);
