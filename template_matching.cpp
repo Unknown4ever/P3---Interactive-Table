@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 		if (waitKey(30) >= 0) break;
 		while (frame.empty())
 		{
-			std::cout << "Frame Vacio" << std::endl;
+			std::cout << " " << std::endl;
 		}
 		img = frame.clone();
 		//frame.clone();
