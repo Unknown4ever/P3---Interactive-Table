@@ -1,6 +1,7 @@
 #pragma once
 #include <opencv2\opencv.hpp>
 
+
 using namespace cv;
 using namespace std;
 
@@ -8,7 +9,6 @@ using namespace std;
 
 Mat makeMask(Mat image, int lowLim1[], int upLim1[]) {
 	Mat mask;
-
 	int upLim[] = { upLim1[0],upLim1[1],upLim1[2] };
 	int lowLim[] = { lowLim1[0],lowLim1[1],lowLim1[2] };
 
@@ -17,12 +17,43 @@ Mat makeMask(Mat image, int lowLim1[], int upLim1[]) {
 	}
 	else {
 		cvtColor(image, image, COLOR_BGR2HSV);
+		//imshow("hsv", image);
 		image.copyTo(mask);
 		inRange(mask, Scalar(lowLim[0], lowLim[1], lowLim[2]), Scalar(upLim[0], upLim[1], upLim[2]), mask);
 		
-		erode(mask, mask, Mat(), Point(-1, -1), 1);
-		dilate(mask, mask, Mat(), Point(-1, -1), 1);
+		//erode(mask, mask, Mat(), Point(-1, -1), 1);
+		//dilate(mask, mask, Mat(), Point(-1, -1), 1);
 		
+	}
+	return mask;
+}
+
+Mat makeGreenMask(Mat image) {
+	Mat mask;
+
+	if (image.empty()) {
+		//cout << "Could no find image" << endl;
+	}
+	else {
+		image.copyTo(mask);
+		for (int y = 0; y < mask.rows; y++) {
+			for (int x = 0; x < mask.cols; x++) {
+				int b = mask.at<Vec3b>(y, x)[0];
+				int g = mask.at<Vec3b>(y, x)[1];
+				int r = mask.at<Vec3b>(y, x)[2];
+
+				if (b < g & r < g & g > 60) {
+					mask.at<Vec3b>(y, x) = { 255, 255, 255 };
+				}
+				else {
+					mask.at<Vec3b>(y, x) = 0;
+				}
+			}
+		}
+		cvtColor(mask, mask, COLOR_BGR2GRAY);
+		erode(mask, mask, Mat(), Point(-1, -1), 3);
+		dilate(mask, mask, Mat(), Point(-1, -1), 4);
+
 	}
 	return mask;
 }
@@ -44,146 +75,115 @@ void setLabel(Mat& im, const string label, vector<Point>& contour) {
 vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 	vector<vector<int>> boats;
 	for (int i = 0; i < contours.size(); i += 2) {
-		vector<Point> contour;
-		contour = contours.at(i);
-		Rect bBox = boundingRect(contour);
-		float height = float(bBox.height);
-		float width = float(bBox.width);
-		double ratio = 0.00;
-		//Part that find the direction of the ship
-		bool direction;
-		//Ship is vertical
-		if (width < height) {
-			ratio = double(height / width);
-			direction = true;
-		}
-		//Ship is horisontal
-		else {
-			ratio = double(width / height);
-			direction = false;
-		}
-		//cout << "Width: " << width << " Height: " << height << " Ratio: " << ratio << endl;
-
-		//Part that finds the size of the ship
-		vector<vector<double>> boatRatios;
-		boatRatios.push_back(vector<double>{ 2, 0 });
-		boatRatios.push_back(vector<double>{ 3, 2.5 });
-		boatRatios.push_back(vector<double>{ 4, 3.5 });
-		boatRatios.push_back(vector<double>{ 5, 5.5 });
-
-		double bestFit = 10;
-		int boatSize;
-
-		for (int j = 0; j < boatRatios.size(); j++) {
-			if (ratio > boatRatios.at(j).at(1)) {
-				boatSize = boatRatios.at(j).at(0);
+		vector<Point> approx;
+		approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true)*0.02, true);
+		if (!(fabs(contourArea(contours.at(i))) < 150 /* || !isContourConvex(approx) */)) {
+			vector<Point> contour;
+			contour = contours.at(i);
+			Rect bBox = boundingRect(contour);
+			float height = float(bBox.height);
+			float width = float(bBox.width);
+			double ratio = 0.00;
+			//Part that find the direction of the ship
+			bool direction;
+			//Ship is vertical
+			if (width < height) {
+				ratio = double(height / width);
+				direction = true;
 			}
-		}
-		//Part that finds the position of the ship
-		vector<int> vlines;
-		vector<int> hlines;
-		for (int k = 0; k < 12; k++) {
-			hlines.push_back((image.rows / 12)*k);
-		}
-		for (int k = 0; k < 22; k++) {
-			vlines.push_back((image.cols / 22)*k);
-		}
+			//Ship is horisontal
+			else {
+				ratio = double(width / height);
+				direction = false;
+			}
+			//cout << "Width: " << width << " Height: " << height << " Ratio: " << ratio << endl;
 
-		int x = 0;
-		int y = 0;
-		//Find x and y
-		//Vertical
-		if (direction == true) {
-			//Find x
-			for (int j = 0; j < vlines.size() - 1; j++) {
-				if (vlines.at(j) < bBox.x & bBox.x > vlines.at(j + 1)) {
-					x = j;
+			//Part that finds the size of the ship
+			vector<vector<double>> boatRatios;
+			boatRatios.push_back(vector<double>{ 2, 0 });
+			boatRatios.push_back(vector<double>{ 3, 2.5 });
+			boatRatios.push_back(vector<double>{ 4, 3.5 });
+			boatRatios.push_back(vector<double>{ 5, 5.5 });
+
+			double bestFit = 10;
+			int boatSize;
+
+			for (int j = 0; j < boatRatios.size(); j++) {
+				if (ratio > boatRatios.at(j).at(1)) {
+					boatSize = boatRatios.at(j).at(0);
 				}
 			}
-			//Find y
-			for (int j = 0; j < hlines.size() - 1; j++) {
-				if (hlines.at(j) < bBox.y + height*0.4 & bBox.y + height*0.4 > hlines.at(j + 1)) {
-					y = j;
-				}
+			//Part that finds the position of the ship
+			vector<int> vlines;
+			vector<int> hlines;
+			for (int k = 0; k < 12; k++) {
+				hlines.push_back((image.rows / 12)*k);
 			}
-		}
-		//Horisontal
-		else {
-			//Find x
-			for (int j = 0; j < vlines.size() - 1; j++) {
-				if (vlines.at(j) < bBox.x + height*0.4 & bBox.x + height*0.4 > vlines.at(j + 1)) {
-					x = j;
-				}
+			for (int k = 0; k < 22; k++) {
+				vlines.push_back((image.cols / 22)*k);
 			}
-			//Find y
-			for (int j = 0; j < hlines.size() - 1; j++) {
-				if (hlines.at(j) < bBox.y & bBox.y > hlines.at(j + 1)) {
-					y = j;
-				}
-			}
-		}
 
-		vector<int> boat;
-		boat.push_back(x);
-		boat.push_back(y);
-		boat.push_back(boatSize);
-		boat.push_back(direction);
+			int x = 0;
+			int y = 0;
+			//Find x and y
+			//Vertical
+			if (direction == true) {
+				//Find x
+				for (int j = 0; j < vlines.size() - 1; j++) {
+					if (vlines.at(j) < bBox.x & bBox.x > vlines.at(j + 1)) {
+						x = j;
+					}
+				}
+				//Find y
+				for (int j = 0; j < hlines.size() - 1; j++) {
+					if (hlines.at(j) < bBox.y + height*0.4 & bBox.y + height*0.4 > hlines.at(j + 1)) {
+						y = j;
+					}
+				}
+			}
+			//Horisontal
+			else {
+				//Find x
+				for (int j = 0; j < vlines.size() - 1; j++) {
+					if (vlines.at(j) < bBox.x + height*0.4 & bBox.x + height*0.4 > vlines.at(j + 1)) {
+						x = j;
+					}
+				}
+				//Find y
+				for (int j = 0; j < hlines.size() - 1; j++) {
+					if (hlines.at(j) < bBox.y & bBox.y > hlines.at(j + 1)) {
+						y = j;
+					}
+				}
+			}
 
-		boats.push_back(boat);
+			vector<int> boat;
+			boat.push_back(x);
+			boat.push_back(y);
+			boat.push_back(boatSize);
+			boat.push_back(direction);
+
+			boats.push_back(boat);
+		}
 	}
 	return boats;
 }
 
-Mat combineImage(Mat image1, Mat image2, int xStart, int yStart) {
-	int h = image2.rows;
-	int w = image2.cols;
 
-	for (int x = 0; x < w; x++) {
-		for (int y = 0; y < h; y++) {
-			Vec3b bgr = image2.at<Vec3b>(y, x);
-			if (!(bgr[0] == 0 & bgr[1] == 0 & bgr[2] == 0)) {
-				if (x+xStart >= 0 & image1.cols > x+xStart & y+yStart >= 0 & image1.rows > y+yStart) {
-					image1.at<Vec3b>(y + yStart, x + xStart) = image2.at<Vec3b>(y, x);
-				}
-				else {
-					cout << "Imagecombiner: ERROR, Image out of range" << endl;
-				}
-			}
-		}
-	}
-
-	return image1;
-}
-
-vector<vector<Point>> shapeDetection(Mat mask, Mat image) {
+vector<vector<Point>> edgeDetection(Mat mask, Mat image) {
 	Mat canny_output;
 	image.copyTo(canny_output);
 	int thresh = 80;
 	int max_thresh = 255;
 
 	vector<vector<Point> > contours;
-	vector<Point> approx;
 	vector<Vec4i> hierarchy;
 	Canny(mask, canny_output, thresh, thresh * 2, 3);
 	findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
-	/*
 	
-	Mat dst;
-	canny_output.copyTo(dst);
-
-	for (int i = 0; i < contours.size(); i++) {
-		approxPolyDP(Mat(contours.at(i)), approx, arcLength(Mat(contours.at(i)), true)*0.02, true);
-		if (fabs(contourArea(contours.at(i))) < 100 || !isContourConvex(approx)) {
-			continue;
-		}
-		int vtc = approx.size();
-		setLabel(dst, to_string(vtc), contours.at(i));
-	}
-	cvtColor(dst, dst, COLOR_BayerBG2BGR);
-	dst = combineImage(image, dst, 0, 0);
-	*/
 	return contours;
 }
+
 
 //Debug function
 void printBoats(vector<vector<int>> boats) {
@@ -195,15 +195,17 @@ void printBoats(vector<vector<int>> boats) {
 	}
 }
 
+
 vector<vector<int>> scanForBoats(Mat image) {
 	Mat mask;
 	image.copyTo(mask);
-	int upLim[] = { 90,240,240 };
-	int lowLim[] = { 40,50,0 };
-	mask = makeMask(mask, lowLim, upLim);
+	int upLim[] = { 80,220,240 };
+	int lowLim[] = { 30,50,0 };
+	mask = makeGreenMask(mask);
+	//imshow("mask", mask);
 	vector<vector<int>> boats;
 	vector<vector<Point>> contours;
-	contours = shapeDetection(mask, image);
+	contours = edgeDetection(mask, image);
 	boats = findBoats(contours, image);
 	return boats;
 }
