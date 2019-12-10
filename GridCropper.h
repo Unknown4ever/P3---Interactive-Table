@@ -74,23 +74,18 @@ public:
 			Mat rescaledimage;
 			image = image(grid);
 			image.copyTo(rescaledimage);
-			imshow("Gridcropper: Pre-scaled image", image);
 			waitKey(1);
 			
 			//Scale for y
 			for (int x = 0; x < rescaledimage.cols; x++)
 			{
 				int imageHeight = (butt_a*x + butt_left.y) - (top_a*x + top_left.y);
-				//cout << "Image Height: " << imageHeight << endl;
 				double scaler = double(imageHeight) / double(rescaledimage.rows);
 
 				for (int y = 0; y < rescaledimage.rows; y++)
 				{
-					//cout << "scaling at: " << x << ", " << y << endl;
-					//cout << roundoff(int(scaler*y) + int(top_a*x), image.rows-1, 0) << ", " << roundoff(x, image.cols-1, 0) << endl;
 					rescaledimage.at<Vec3b>(y, x) =
-						//image.at<Vec3b>(roundoff(int(scaler*y), image.rows-1, 0), roundoff(x, image.cols-1, 0));
-						image.at<Vec3b>(roundoff(int(scaler*y) + int(top_a*x) /*- displacementY*/, image.rows - 1, 0), x);
+						image.at<Vec3b>(roundoff(int(scaler*y) + int(top_a*x), image.rows - 1, 0), x);
 				}
 			}
 			rescaledimage.copyTo(image);
@@ -99,15 +94,11 @@ public:
 			for (int y = 0; y < rescaledimage.rows; y++)
 			{
 				int imageHeight = (right_a*y + top_right.x) - (left_a*y + top_left.x);
-				//cout << "Image Height: " << imageHeight << endl;
 				double scaler = double(imageHeight) / double(rescaledimage.cols);
 
 				for (int x = 0; x < rescaledimage.cols; x++)
 				{
-					//cout << "scaling at: " << x << ", " << y << endl;
-					//cout << roundoff(int(scaler*y) + int(top_a*x), image.rows-1, 0) << ", " << roundoff(x, image.cols-1, 0) << endl;
 					rescaledimage.at<Vec3b>(y, x) =
-						//image.at<Vec3b>(roundoff(int(scaler*y), image.rows-1, 0), roundoff(x, image.cols-1, 0));
 						image.at<Vec3b>(y, roundoff(int(scaler*x) + int(left_a*y) + displacementX, image.cols - 1, 0));
 				}
 			}
@@ -117,7 +108,6 @@ public:
 
 
 	void findGrid(Mat image) {
-		imshow("Gridcropper: image to scan for grid", image);
 		Mat mask;
 		image.copyTo(mask);
 		// Blue
@@ -126,8 +116,6 @@ public:
 		mask = makeMask(mask, lowLim, upLim);
 		erode(mask, mask, Mat(), Point(-1, -1), 1);
 		dilate(mask, mask, Mat(), Point(-1, -1), 2);
-		imshow("Gridcropper: mask", mask);
-		//waitKey(0);
 		vector<vector<Point>> contours;
 		contours = edgeDetection(mask, image);
 
@@ -135,8 +123,7 @@ public:
 		for (int i = 0; i < contours.size(); i++) {
 			vector<Point> approx;
 			approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true)*0.02, true);
-			if (!(fabs(contourArea(contours.at(i))) < 100 /* || !isContourConvex(approx) */)) {
-				cout << "GC: Size matters: " << fabs(contourArea(contours.at(i))) << 20 << endl;
+			if (!(fabs(contourArea(contours.at(i))) < 100)) {
 				new_contours.push_back(contours.at(i));
 			}
 		}
@@ -147,7 +134,6 @@ public:
 			gridCorner corner;
 			corner.bBox = boundingRect(contours.at(i));
 			cornerBoxes.push_back(corner);
-			cout << "Corner: " << corner.bBox.x << ", " << corner.bBox.y << endl;
 		}
 
 		if (cornerBoxes.size()>3) {
@@ -166,8 +152,6 @@ public:
 			displacementX = abs(top_left.x - butt_left.x);
 			displacementY = abs(top_left.y - top_right.y);
 
-			cout << "displacements: " << displacementX << ", " << displacementY << endl;
-
 			vector<Point> otl;
 			otl.push_back(top_left);
 			otl.push_back(top_right);
@@ -175,12 +159,6 @@ public:
 			otl.push_back(butt_right);
 
 			grid = boundingRect(otl);
-
-			cout << "top_a: " << top_a << ", butt_a: " << butt_a << endl;
-
-			for (int i = 0; i < cornerBoxes.size(); i++) {
-				cout << "corner x: " << cornerBoxes.at(i).bBox.x << ", Corner y: " << cornerBoxes.at(i).bBox.y << endl;
-			}
 		}
 
 		else if(!cornerBoxes.empty()) {
@@ -192,9 +170,5 @@ public:
 			}
 			grid = boundingRect(gridPoints);
 		}
-
-		
-		
-		//grid = boundingRect(gridPoints);
 	}
 };
