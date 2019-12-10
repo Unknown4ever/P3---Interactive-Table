@@ -9,6 +9,8 @@ using namespace cv;
 using namespace std;
 using namespace std::chrono_literals;
 
+void resizeBackground(Mat& background, int x, int y);
+Mat combineImage(Mat image1, Mat image2, int xStart, int yStart);
 
 class gridDisplayer {
 
@@ -187,7 +189,10 @@ public:
 	void display() {
 		background.copyTo(displayground);
 		grid.display(displayground);
-		imshow(name, displayground);
+		Mat displayBOB;
+		displayground.copyTo(displayBOB);
+		resizeBackground(displayBOB, 1920, 900);
+		imshow(name, displayBOB);
 	}
 
 	void displayWithBoats() {
@@ -195,7 +200,10 @@ public:
 		for (int i = 0; i < boats.size(); i++) {
 			boats.at(i).display(displayground);
 		}
-		imshow(name, displayground);
+		Mat displayBOB;
+		displayground.copyTo(displayBOB);
+		resizeBackground(displayBOB, 1920, 900);
+		imshow(name, displayBOB);
 	}
 
 	void shoot(int status, int x, int y) {
@@ -219,3 +227,23 @@ void resizeBackground(Mat& background, int x, int y) {
 	resize(background, background, Size(), factorX, factorY);
 }
 
+Mat combineImage(Mat image1, Mat image2, int xStart, int yStart) {
+	int h = image2.rows;
+	int w = image2.cols;
+
+	for (int x = 0; x < w; x++) {
+		for (int y = 0; y < h; y++) {
+			Vec3b bgr = image2.at<Vec3b>(y, x);
+			if (!(bgr[0] == 0 & bgr[1] == 0 & bgr[2] == 0)) {
+				if (x + xStart >= 0 & image1.cols > x + xStart & y + yStart >= 0 & image1.rows > y + yStart) {
+					image1.at<Vec3b>(y + yStart, x + xStart) = image2.at<Vec3b>(y, x);
+				}
+				else {
+					//cout << "Imagecombiner: ERROR, Image out of range" << endl;
+				}
+			}
+		}
+	}
+
+	return image1;
+}
