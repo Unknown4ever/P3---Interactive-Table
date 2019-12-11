@@ -111,11 +111,12 @@ public:
 		Mat mask;
 		image.copyTo(mask);
 		// Blue
-		int upLim[] = { 120,255,255 };
-		int lowLim[] = { 100,100,150 };
+		int upLim[] = { 130,255,255 };
+		int lowLim[] = { 90,100,150 };
 		mask = makeMask(mask, lowLim, upLim);
 		erode(mask, mask, Mat(), Point(-1, -1), 1);
 		dilate(mask, mask, Mat(), Point(-1, -1), 2);
+		imshow("Mask is cropper: ", mask);
 		vector<vector<Point>> contours;
 		contours = edgeDetection(mask, image);
 

@@ -6,7 +6,6 @@ using namespace cv;
 using namespace std;
 
 
-
 Mat makeMask(Mat image, int lowLim1[], int upLim1[]) {
 	Mat mask;
 	int upLim[] = { upLim1[0],upLim1[1],upLim1[2] };

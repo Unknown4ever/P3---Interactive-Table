@@ -69,6 +69,9 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 		foundShape = true;
 	}
 	bool direction = false;
+
+	cout << "I'm dis edgy: " << edgeCount << endl;
+
 	if (foundShape == false & edgeCount == 4) {
 
 		double ratio = 0.00;
@@ -175,13 +178,17 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder gridfinder) {
 	Mat mask;
 	Mat image;
 	cap >> image;
+	gridfinder.cropToGrid(image);
 	image.copyTo(mask);
 	int upLim[] = { 90,240,200 };
 	int lowLim[] = { 40,50,0 };
 	//int upLim[] = { 50,255,50 };
 	//int lowLim[] = { 0,200,0 };
-	mask = makeFineMask(mask, lowLim, upLim);
 	GaussianBlur(mask, mask, Size(9, 9), 2, 2);
+
+	mask = makeFineMask(mask, lowLim, upLim);
+	dilate(mask, mask, Mat(), Point(-1, -1), 1);
+	
 	//mask = makeGreenMask(mask);
 	vector<vector<Point>> contours;
 	imshow("Le mask: ", mask);
@@ -199,7 +206,7 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder gridfinder) {
 	}
 	
 	contours = new_contours;
-	//0 = circle, 3 = triangle, 4 = square, 12 = plus
+
 	vector<int> shot;
 	if (!(contours.empty())) {
 		int edgeCount = shapeDetection(contours);
