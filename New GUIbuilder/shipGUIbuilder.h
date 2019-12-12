@@ -23,6 +23,7 @@ private:
 	Mat missDot;
 	Mat hasBoatSQ;
 	Mat noBoatSQ;
+	Mat preShotSQ;
 
 	void scoutColouring(bool isBoat) {
 		if (isBoat == false) {
@@ -37,6 +38,13 @@ private:
 		//terminate();
 	}
 
+	void preShotColouring(){
+		gridDisplay = combineImage(gridDisplay, preShotSQ, 10, 10);
+		this_thread::sleep_for(1s);
+		gridDisplay = imread("Ships/grid.png");
+		shoot(shotStatus);
+	}
+
 public:
 	//displayer constructor. Call it everytime a ship needs to be displayed, use required parameters. 
 	gridDisplayer(int locationX, int locationY, bool rotated) { 
@@ -48,6 +56,7 @@ public:
 		missDot = imread("Ships/gridMissDot.png");
 		hasBoatSQ = imread("Ships/gridScoutDark.png");
 		noBoatSQ = imread("Ships/gridScoutBright.png");
+		preShotSQ = imread("Ships/gridPreShot.png");
 	}
 
 
@@ -68,6 +77,10 @@ public:
 		t.detach();
 	}
 
+	void preShoot() {
+		thread t(&gridDisplayer::preShotColouring, this);
+		t.detach();
+	}
 
 	void display(Mat& background) {
 		shoot(shotStatus);
@@ -160,6 +173,10 @@ public:
 		gridVector.at(x).at(y).scout(isBoat);
 	}
 
+	void preShoot(int x, int y) {
+		gridVector.at(x).at(y).preShoot();
+	}
+
 	void display(Mat& background) {
 		for (int x = 0; x < gridVector.size(); x++) {
 			for (int y = 0; y < gridVector.at(x).size(); y++) {
@@ -208,6 +225,10 @@ public:
 
 	void shoot(int status, int x, int y) {
 		grid.shoot(status, x, y);
+	}
+
+	void preShoot(int x, int y) {
+		grid.preShoot(x, y);
 	}
 
 	void scout(bool status, int x, int y) {
