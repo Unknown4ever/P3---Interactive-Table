@@ -33,6 +33,7 @@ bool longStick = false;
 bool regularShot = false;
 
 bool inputGo = false;
+bool showBoatsInGame = false;
 
 VideoCapture cap(1);
 
@@ -72,22 +73,41 @@ struct PLACESHIPS {
 bool guessingStage = false;
 Gridfinder gridfinder;
 
+
 //Functions
 void LoadShips();
 void DrawBoard(int);
 void inputTracker();
-void liveFeeder(VideoCapture);
+void liveFeeder();
 PLACESHIPS UserInputShipPlacement(vector<int>);
 bool UserInputAttack(int& x, int& y, int& d, int& type, int);
 bool GameOverCheck(int);
+
+
 
 
 int main()
 {
 	thread t(inputTracker);
 	t.detach();
-	//thread t2(liveFeeder, cap);
+	//thread t2(liveFeeder);
 	//t2.detach();
+	system("cls");
+	cout << "Ajust Camera and type 'go' when ready" << endl;
+	while (inputGo == false) {
+		Mat image;
+		cap >> image;
+		imshow("Livefeed", image);
+		waitKey(1);
+		player[0].playerGrid.display();
+	}
+	cv::destroyWindow("Livefeed");
+	inputGo = false;
+	
+	Mat imagegrid;
+	cap >> imagegrid;
+	gridfinder.findGrid(imagegrid);
+
 	LoadShips();
 
 	//insert function here in the future for changing between abilities
@@ -108,18 +128,17 @@ int main()
 
 		auto start = high_resolution_clock::now();
 		vector<vector<int>> boats;
-		
-
+		system("cls");
+		cout << "Player " << aPlayer << ", Place boats!" << endl << "Type 'go' to go to next step" << endl;
 		while (inputGo == false)
 		{
 			//cout << time_point_cast<milliseconds>(start) << endl;
 			PlayerGrid grid("Battleship");
-			Gridfinder gridFinder;
 			Mat image;
 			cap >> image;
-			gridFinder.findGrid(image);
-			gridFinder.cropToGrid(image);
-			imshow("main119", image);
+			//gridfinder.findGrid(image);
+			gridfinder.cropToGrid(image);
+
 			boats = scanForBoats(image);
 			for (int i = 0; i < boats.size(); i++)
 			{
@@ -128,8 +147,17 @@ int main()
 			grid.displayWithBoats();
 			cv::waitKey(1);
 		}
+		cv::destroyWindow("main132");
 		inputGo = false;
 
+		player[aPlayer].playerGrid.display();
+		cv::waitKey(10);
+
+		Mat image;
+		cap >> image;
+		//gridfinder.findGrid(image);
+		gridfinder.cropToGrid(image);
+		boats = scanForBoats(image);
 
 		//Loop through each ship type to place
 		for (int i = 0; i < boats.size(); i++)
@@ -198,22 +226,32 @@ int main()
 		DrawBoard(enemyPlayer);
 		player[enemyPlayer].playerGrid.display();
 		cv::waitKey(1);
+		cout << "Player " << thisPlayer << ", Shoot!" << endl << "Type 'go' to continue to go to next step" << endl;
 		while (inputGo == false)
 		{
+			vector<int> shot;
+			Mat image;
+			cap >> image;
+			//gridfinder.findGrid(image);
+			shot = scanForShot(cap, gridfinder);
+			if (!shot.empty()) {
+				player[enemyPlayer].playerGrid.preShoot(shot.at(0), shot.at(1));
+				if (showBoatsInGame == false) player[enemyPlayer].playerGrid.display();
+				else player[enemyPlayer].playerGrid.displayWithBoats();
+			}
+			waitKey(1);
 		}
 		//Get attack coords from this player
 		bool goodInput = false;
 		int x, y, shotType, d;
 		while (goodInput == false) {
 			goodInput = UserInputAttack(x, y, d, shotType, thisPlayer);
-			std::cout << "I am in while now" << endl;
 		}
-		std::cout << "I am under while now" << endl;
 		regularShot = false;
 		multiShot = false;
 		superMultiShot = false;
 		strafeRun = false;
-		longStick = false;
+		longStick = !bool(d);
 		scoutArea = false;
 
 		if (shotType == 1)
@@ -369,7 +407,7 @@ int main()
 		if (strafeRun == true) {
 			// false = horizontal 
 			// true = vertical
-			for (int x2 = -2; x2 < 3; x2++) 
+			for (int x2 = 0; x2 < 5; x2++) 
 			{
 				if (longStick == false)
 				{
@@ -431,7 +469,7 @@ int main()
 	} while (guessingStage);
 
 	std::system("cls");
-	std::cout << "\n\nPLAYER " << thisPlayer << "WON\n\n\n\n";
+	std::cout << "\n\nPLAYER " << thisPlayer << " WON\n\n\n\n";
 	std::system("pause");
 	return 0;
 }
@@ -443,12 +481,20 @@ void inputTracker()
 		string gogo;
 		cin >> gogo;
 		if (gogo == "go") inputGo = true;
+		if (gogo == "findgrid") {
+			cout << "Finding grid" << endl;
+			Mat image;
+			cap >> image;
+			gridfinder.findGrid(image);
+		}
+		if (gogo == "showboats") showBoatsInGame = !showBoatsInGame;
 	}
 }
 
-void liveFeeder(VideoCapture cap) {
+void liveFeeder() {
 	{
 		Mat image;
+		//VideoCapture cap;
 		while (true) {
 			cap >> image;
 			imshow("Livefeed", image);
@@ -486,7 +532,7 @@ bool UserInputAttack(int& x, int& y, int& d, int& type, int theplayer)
 	{
 		Mat image;
 		cap >> image;
-		gridfinder.findGrid(image);
+		//gridfinder.findGrid(image);
 		shot = scanForShot(cap, gridfinder);
 		if (!shot.empty() && shot.at(2) != 0) {
 			shotFound = true;
@@ -579,6 +625,7 @@ void DrawBoard(int thisPlayer)
 			//Displaying the letters
 
 			if (w == 0) {
+				
 				std::cout << gridLetters[h] << "  ";
 			}
 			if (w > 10) {
@@ -589,11 +636,11 @@ void DrawBoard(int thisPlayer)
 
 			if (guessingStage == true && player[thisPlayer].grid[w][h] != is_SHIP)
 			{
-				std::cout << player[thisPlayer].grid[w][h] << "  ";
+				//std::cout << player[thisPlayer].grid[w][h] << "  ";
 			}
 			else if (guessingStage == true && player[thisPlayer].grid[w][h] == is_SHIP)
 			{
-				std::cout << WATER << "  ";
+				//std::cout << WATER << "  ";
 			}
 			if (w == BOARD_WIDTH - 1) std::cout << endl;
 		}
