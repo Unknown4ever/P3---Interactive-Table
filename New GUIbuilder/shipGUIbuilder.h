@@ -63,11 +63,13 @@ public:
 	void shoot(int status) {
 		if (status == 1) {
 			gridDisplay = combineImage(gridDisplay, hitDot, 50, 10);
+			shotStatus = status;
 		}
-		else if (status == 2) {
+		else if (status == 2 & shotStatus != 1) {
 			gridDisplay = combineImage(gridDisplay, missDot, 50, 10);
+			shotStatus = status;
 		}
-		shotStatus = status;
+		
 	}
 
 
