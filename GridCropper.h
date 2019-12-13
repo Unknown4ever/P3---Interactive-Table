@@ -112,7 +112,7 @@ public:
 		image.copyTo(mask);
 		// Blue
 		int upLim[] = { 130,255,255 };
-		int lowLim[] = { 90,100,150 };
+		int lowLim[] = { 90,100,90 };
 		mask = makeMask(mask, lowLim, upLim);
 		erode(mask, mask, Mat(), Point(-1, -1), 1);
 		dilate(mask, mask, Mat(), Point(-1, -1), 2);
@@ -139,27 +139,43 @@ public:
 
 		if (cornerBoxes.size()>3) {
 			sortX(cornerBoxes);
-			top_left = Point(cornerBoxes.at(0).bBox.x, cornerBoxes.at(0).bBox.y);
-			butt_left = Point(cornerBoxes.at(1).bBox.x, cornerBoxes.at(1).bBox.y+cornerBoxes.at(1).bBox.height);
-			top_right = Point(cornerBoxes.at(2).bBox.x + cornerBoxes.at(2).bBox.width, cornerBoxes.at(2).bBox.y);
-			butt_right = Point(cornerBoxes.at(3).bBox.x + cornerBoxes.at(3).bBox.width, cornerBoxes.at(3).bBox.y + cornerBoxes.at(3).bBox.height);
+			Point pre_top_left = Point(cornerBoxes.at(0).bBox.x, cornerBoxes.at(0).bBox.y);
+			Point pre_butt_left = Point(cornerBoxes.at(1).bBox.x, cornerBoxes.at(1).bBox.y+cornerBoxes.at(1).bBox.height);
+			Point pre_top_right = Point(cornerBoxes.at(2).bBox.x + cornerBoxes.at(2).bBox.width, cornerBoxes.at(2).bBox.y);
+			Point pre_butt_right = Point(cornerBoxes.at(3).bBox.x + cornerBoxes.at(3).bBox.width, cornerBoxes.at(3).bBox.y + cornerBoxes.at(3).bBox.height);
 
-			top_a = (double(top_right.y) - double(top_left.y)) / (double(top_right.x) - double(top_left.x));
-			butt_a = (double(butt_right.y) - double(butt_left.y)) / (double(butt_right.x) - double(butt_left.x));
+			vector<Point> pre_otl;
+			pre_otl.push_back(pre_top_left);
+			pre_otl.push_back(pre_top_right);
+			pre_otl.push_back(pre_butt_left);
+			pre_otl.push_back(pre_butt_right);
 
-			left_a = (double(butt_left.x) - double(top_left.x)) / (double(butt_left.y) - double(top_left.y));
-			right_a = (double(butt_right.x) - double(top_right.x)) / (double(butt_right.y) - double(top_right.y));
+			Rect pre_gridRect = boundingRect(pre_otl);
 
-			displacementX = abs(top_left.x - butt_left.x);
-			displacementY = abs(top_left.y - top_right.y);
+			//Checks if grid is any good
+			if (pre_gridRect.height > 200 & pre_gridRect.width > 400) {
+				top_left = Point(cornerBoxes.at(0).bBox.x, cornerBoxes.at(0).bBox.y);
+				butt_left = Point(cornerBoxes.at(1).bBox.x, cornerBoxes.at(1).bBox.y + cornerBoxes.at(1).bBox.height);
+				top_right = Point(cornerBoxes.at(2).bBox.x + cornerBoxes.at(2).bBox.width, cornerBoxes.at(2).bBox.y);
+				butt_right = Point(cornerBoxes.at(3).bBox.x + cornerBoxes.at(3).bBox.width, cornerBoxes.at(3).bBox.y + cornerBoxes.at(3).bBox.height);
+				
+				top_a = (double(top_right.y) - double(top_left.y)) / (double(top_right.x) - double(top_left.x));
+				butt_a = (double(butt_right.y) - double(butt_left.y)) / (double(butt_right.x) - double(butt_left.x));
 
-			vector<Point> otl;
-			otl.push_back(top_left);
-			otl.push_back(top_right);
-			otl.push_back(butt_left);
-			otl.push_back(butt_right);
+				left_a = (double(butt_left.x) - double(top_left.x)) / (double(butt_left.y) - double(top_left.y));
+				right_a = (double(butt_right.x) - double(top_right.x)) / (double(butt_right.y) - double(top_right.y));
 
-			grid = boundingRect(otl);
+				displacementX = abs(top_left.x - butt_left.x);
+				displacementY = abs(top_left.y - top_right.y);
+
+				vector<Point> otl;
+				otl.push_back(top_left);
+				otl.push_back(top_right);
+				otl.push_back(butt_left);
+				otl.push_back(butt_right);
+
+				grid = boundingRect(otl);
+			}
 		}
 
 		else if(!cornerBoxes.empty()) {
