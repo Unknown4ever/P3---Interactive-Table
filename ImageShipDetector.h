@@ -57,6 +57,50 @@ Mat makeGreenMask(Mat image) {
 	return mask;
 }
 
+Mat contrastBrightness(Mat image, double contrast, int brightness) {
+	Mat new_image = Mat::zeros(image.size(), image.type());
+	for (int y = 0; y < image.rows; y++) {
+		for (int x = 0; x < image.cols; x++) {
+			for (int c = 0; c < image.channels(); c++) {
+				new_image.at<uchar>(y, x) =
+					saturate_cast<uchar>(contrast * image.at<uchar>(y, x) + brightness);
+			}
+		}
+	}
+	return new_image;
+}
+
+Mat makeGrayMask(Mat image) {
+	Mat grayim;
+	cvtColor(image, grayim, COLOR_BGR2GRAY);
+
+	grayim = contrastBrightness(grayim, 2, 1);
+
+	cvtColor(grayim, grayim, COLOR_GRAY2BGR);
+
+	int upper = 220;
+	int skibidi = 4;
+
+	inRange(grayim, Scalar(0, 0, 0), Scalar(upper, upper, upper), grayim);
+
+	erode(grayim, grayim, Mat(), Point(-1, -1), 1);
+	dilate(grayim, grayim, Mat(), Point(-1, -1), skibidi);
+	erode(grayim, grayim, Mat(), Point(-1, -1), skibidi);
+	dilate(grayim, grayim, Mat(), Point(-1, -1), 6);
+	erode(grayim, grayim, Mat(), Point(-1, -1), 6);
+
+	for (int x = 0; x < grayim.cols; x++) {
+		grayim.at<uchar>(0, x) = 0;
+		grayim.at<uchar>(grayim.rows - 1, x) = 0;
+	}
+	for (int y = 0; y < grayim.rows; y++) {
+		grayim.at<uchar>(y, 0) = 0;
+		grayim.at<uchar>(y, grayim.cols - 1) = 0;
+	}
+
+	return grayim;
+}
+
 void setLabel(Mat& im, const string label, vector<Point>& contour) {
 	int fontface = FONT_HERSHEY_SIMPLEX;
 	double scale = 0.4;
@@ -73,10 +117,12 @@ void setLabel(Mat& im, const string label, vector<Point>& contour) {
 
 vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 	vector<vector<int>> boats;
+	Mat lineFoto;
+	image.copyTo(lineFoto);
 	for (int i = 0; i < contours.size(); i += 2) {
 		vector<Point> approx;
 		approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true)*0.02, true);
-		if (!(fabs(contourArea(contours.at(i))) < 150 /* || !isContourConvex(approx) */)) {
+		if (!(fabs(contourArea(contours.at(i))) < 80 /* || !isContourConvex(approx) */)) {
 			vector<Point> contour;
 			contour = contours.at(i);
 			Rect bBox = boundingRect(contour);
@@ -115,12 +161,14 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 			//Part that finds the position of the ship
 			vector<int> vlines;
 			vector<int> hlines;
-			for (int k = 0; k < 12; k++) {
-				hlines.push_back((image.rows / 12)*k);
+			for (int k = 0; k < 11; k++) {
+				hlines.push_back((double(image.rows) / 10.0)*k);
 			}
-			for (int k = 0; k < 22; k++) {
-				vlines.push_back((image.cols / 22)*k);
+			for (int k = 0; k < 21; k++) {
+				vlines.push_back((double(image.cols) / 20.0)*k);
 			}
+
+			
 
 			int x = 0;
 			int y = 0;
@@ -129,13 +177,13 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 			if (direction == true) {
 				//Find x
 				for (int j = 0; j < vlines.size() - 1; j++) {
-					if (vlines.at(j) < bBox.x & bBox.x > vlines.at(j + 1)) {
+					if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
 						x = j;
 					}
 				}
 				//Find y
 				for (int j = 0; j < hlines.size() - 1; j++) {
-					if (hlines.at(j) < bBox.y + height*0.4 & bBox.y + height*0.4 > hlines.at(j + 1)) {
+					if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
 						y = j;
 					}
 				}
@@ -144,17 +192,30 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 			else {
 				//Find x
 				for (int j = 0; j < vlines.size() - 1; j++) {
-					if (vlines.at(j) < bBox.x + height*0.4 & bBox.x + height*0.4 > vlines.at(j + 1)) {
+					if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
 						x = j;
 					}
 				}
 				//Find y
 				for (int j = 0; j < hlines.size() - 1; j++) {
-					if (hlines.at(j) < bBox.y & bBox.y > hlines.at(j + 1)) {
+					if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
 						y = j;
 					}
 				}
 			}
+
+			
+
+			for (int k = 0; k < hlines.size(); k++) {
+				line(lineFoto, Point(0, hlines.at(k)), Point(lineFoto.cols - 1, hlines.at(k)), Scalar(255, 0, 0));
+			}
+			for (int k = 0; k < vlines.size(); k++) {
+				line(lineFoto, Point(vlines.at(k), 0), Point(vlines.at(k), lineFoto.rows - 1), Scalar(0, 255, 0));
+			}
+
+			circle(lineFoto, Point(bBox.x, bBox.y), 3, Scalar(0, 0, 255));
+
+			imshow("ShipDetect 177", lineFoto);
 
 			vector<int> boat;
 			boat.push_back(x);
@@ -200,8 +261,10 @@ vector<vector<int>> scanForBoats(Mat image) {
 	image.copyTo(mask);
 	int upLim[] = { 80,220,240 };
 	int lowLim[] = { 30,50,0 };
-	mask = makeGreenMask(mask);
-	//imshow("mask", mask);
+	//mask = makeGreenMask(mask);
+	mask = makeGrayMask(mask);
+
+	imshow("Ship detect: mask", mask);
 	vector<vector<int>> boats;
 	vector<vector<Point>> contours;
 	contours = edgeDetection(mask, image);

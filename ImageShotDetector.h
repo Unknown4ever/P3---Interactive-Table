@@ -24,7 +24,7 @@ Mat makeFineMask(Mat image, int lowLim1[], int upLim1[]) {
 	return mask;
 }
 
-vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, VideoCapture cap, Gridfinder gridfinder) {
+vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, VideoCapture cap, Gridfinder& gridfinder) {
 	Rect bBox = boundingRect(contours.at(0));
 	int x = 0;
 	int y = 0;
@@ -64,15 +64,12 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 
 	//Noting the circle
 	if (circleCount > 4) {
-		cout << "It a circle!" << endl;
 		shotShape = 2;
 		foundShape = true;
 	}
 	bool direction = false;
 
-	cout << "I'm dis edgy: " << edgeCount << endl;
-
-	if (foundShape == false & edgeCount == 4) {
+	if (foundShape == false & edgeCount >= 4) {
 
 		double ratio = 0.00;
 		//Ship is vertical
@@ -87,15 +84,13 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 		}
 		//Strafe run
 		if (float(ratio) > 1.8) {
-			cout << "it a strafe" << endl;
 			shotShape = 5;
 			foundShape = true;
 		}
 		//Regular shot
 		else {
-			cout << "it a square" << endl;
-			shotShape = 1;
-			foundShape = true;
+		shotShape = 1;
+		foundShape = true;
 		}
 	}
 
@@ -121,27 +116,28 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 	vector<int> vlines;
 	vector<int> hlines;
 	for (int k = 0; k < 11; k++) {
-		hlines.push_back((image.rows / 12)*k);
+		hlines.push_back((double(image.rows) / 10.0) * k);
 	}
 	for (int k = 0; k < 21; k++) {
-		vlines.push_back((image.cols / 22)*k);
+		vlines.push_back((double(image.cols) / 20.0) * k);
 	}
 
 
 	//Find x and y
 	//Find x
 	for (int j = 0; j < vlines.size() - 1; j++) {
-		if (vlines.at(j) < bBox.x & bBox.x > vlines.at(j + 1)) {
+		if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
 			x = j;
 		}
 	}
 	//Find y
 	for (int j = 0; j < hlines.size() - 1; j++) {
-		if (hlines.at(j) < bBox.y & bBox.y > hlines.at(j + 1)) {
+		if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
 			y = j;
 		}
 	}
-
+	if (x > 19) x = 19;
+	if (y > 9) y = 9;
 	vector<int> finalShot;
 	finalShot.push_back(x);
 	finalShot.push_back(y);
@@ -156,7 +152,7 @@ int shapeDetection(vector<vector<Point>> contours) {
 	//canny_output.copyTo(dst);
 	int vtc = 0;
 	vector<Point> approx;
-	approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true)*0.02, true);
+	approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true) * 0.02, true);
 	if (!(fabs(contourArea(contours.at(0))) < 100 || !isContourConvex(approx))) {
 		vtc = approx.size();
 	}
@@ -174,7 +170,7 @@ void printShot(vector<int> shot) {
 	cout << "x: " << shot.at(0) << ", y: " << shot.at(1) << ", type: " << shot.at(2) << ", direction: " << shot.at(3) << endl;
 }
 
-vector<int> scanForShot(VideoCapture cap, Gridfinder gridfinder) {
+vector<int> scanForShot(VideoCapture cap, Gridfinder& gridfinder) {
 	Mat mask;
 	Mat image;
 	cap >> image;
@@ -188,7 +184,16 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder gridfinder) {
 
 	mask = makeFineMask(mask, lowLim, upLim);
 	dilate(mask, mask, Mat(), Point(-1, -1), 1);
-	
+
+	for (int x = 0; x < mask.cols; x++) {
+		mask.at<uchar>(0, x) = 0;
+		mask.at<uchar>(mask.rows-1, x) = 0;
+	}
+	for (int y = 0; y < mask.rows; y++) {
+		mask.at<uchar>(y, 0) = 0;
+		mask.at<uchar>(y, mask.cols-1) = 0;
+	}
+
 	//mask = makeGreenMask(mask);
 	vector<vector<Point>> contours;
 	imshow("Le mask: ", mask);
