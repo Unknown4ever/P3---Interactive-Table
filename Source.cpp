@@ -123,9 +123,11 @@ int main()
 	//Loop through each player and place ships
 	for (int aPlayer = 1; aPlayer < 3; aPlayer++)
 	{
+		player[aPlayer].playerGrid.sendMessage("Player " + to_string(aPlayer) + ", place ships!");
+
 		player[aPlayer].playerGrid.display();
 		cv::waitKey(1);
-
+		
 		auto start = high_resolution_clock::now();
 		vector<vector<int>> boats;
 		system("cls");
@@ -224,6 +226,7 @@ int main()
 		if (thisPlayer == 2) enemyPlayer = 1;
 		std::system("cls");
 		DrawBoard(enemyPlayer);
+		player[enemyPlayer].playerGrid.sendMessage("Player " + to_string(thisPlayer) + ", shoot!");
 		player[enemyPlayer].playerGrid.display();
 		cv::waitKey(1);
 		cout << "Player " << thisPlayer << ", Shoot!" << endl << "Type 'go' to continue to go to next step" << endl;
@@ -232,7 +235,7 @@ int main()
 			vector<int> shot;
 			shot = scanForShot(cap, gridfinder);
 			if (!shot.empty()) {
-				player[enemyPlayer].playerGrid.preShoot(shot.at(0), shot.at(1));
+				player[enemyPlayer].playerGrid.preShoot(shot.at(2), shot.at(0), shot.at(1));
 				if (showBoatsInGame == false) player[enemyPlayer].playerGrid.display();
 				else player[enemyPlayer].playerGrid.displayWithBoats();
 			}
@@ -467,6 +470,9 @@ int main()
 
 	std::system("cls");
 	std::cout << "\n\nPLAYER " << thisPlayer << " WON\n\n\n\n";
+	player[0].playerGrid.sendMessage("Player " + to_string(thisPlayer) + " Won!");
+	player[0].playerGrid.display();
+	waitKey(1);
 	std::system("pause");
 	return 0;
 }
