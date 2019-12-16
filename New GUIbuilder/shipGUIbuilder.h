@@ -24,6 +24,10 @@ private:
 	Mat hasBoatSQ;
 	Mat noBoatSQ;
 	Mat preShotSQ;
+	Mat preShotTri;
+	Mat preShotCir;
+	Mat preShotCrs;
+	Mat preShotRec;
 
 	void scoutColouring(bool isBoat) {
 		if (isBoat == false) {
@@ -38,8 +42,17 @@ private:
 		//terminate();
 	}
 
-	void preShotColouring(){
-		gridDisplay = combineImage(gridDisplay, preShotSQ, 10, 10);
+	void preShotColouring(int type){
+		if(type == 1)
+			gridDisplay = combineImage(gridDisplay, preShotSQ, 10, 10);
+		else if(type == 2)
+			gridDisplay = combineImage(gridDisplay, preShotCir, 10, 10);
+		else if(type == 3)
+			gridDisplay = combineImage(gridDisplay, preShotCrs, 10, 10);
+		else if(type == 4)
+			gridDisplay = combineImage(gridDisplay, preShotTri, 10, 10);
+		else if(type == 5)
+			gridDisplay = combineImage(gridDisplay, preShotRec, 10, 10);
 		this_thread::sleep_for(1s);
 		gridDisplay = imread("Ships/grid.png");
 		shoot(shotStatus);
@@ -57,6 +70,10 @@ public:
 		hasBoatSQ = imread("Ships/gridScoutDark.png");
 		noBoatSQ = imread("Ships/gridScoutBright.png");
 		preShotSQ = imread("Ships/gridPreShot.png");
+		preShotTri = imread("Ships/gridPreShotTri.png");
+		preShotCir = imread("Ships/gridPreShotCir.png");
+		preShotCrs = imread("Ships/gridPreShotCrs.png");
+		preShotRec = imread("Ships/gridPreShotRec.png");
 	}
 
 
@@ -79,8 +96,8 @@ public:
 		t.detach();
 	}
 
-	void preShoot() {
-		thread t(&gridDisplayer::preShotColouring, this);
+	void preShoot(int type) {
+		thread t(&gridDisplayer::preShotColouring, this, type);
 		t.detach();
 	}
 
@@ -175,8 +192,8 @@ public:
 		gridVector.at(x).at(y).scout(isBoat);
 	}
 
-	void preShoot(int x, int y) {
-		gridVector.at(x).at(y).preShoot();
+	void preShoot(int type, int x, int y) {
+		gridVector.at(x).at(y).preShoot(type);
 	}
 
 	void display(Mat& background) {
@@ -195,6 +212,29 @@ private:
 	GridView grid = GridView(displayground);
 	vector<shipDisplayer> boats;
 	String name;
+	bool activeMessage;
+	string activeMessageStr;
+
+	void setLabel(Mat& im, const string label, vector<Point>& contour) {
+		int fontface = FONT_HERSHEY_SIMPLEX;
+		double scale = 1;
+		int thickness = 1;
+		int baseline = 0;
+
+		Size text = getTextSize(label, fontface, scale, thickness, &baseline);
+		Rect r = boundingRect(contour);
+
+		Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
+		rectangle(im, pt + Point(0, baseline), pt + Point(text.width, -text.height), CV_RGB(55, 55, 55), FILLED);
+		putText(im, label, pt, fontface, scale, CV_RGB(255, 255, 255), thickness, 8);
+	}
+
+	void messageHandler(string message) {
+		activeMessage = true;
+		activeMessageStr = message;
+		this_thread::sleep_for(6s);
+		activeMessage = false;
+	}
 
 public:
 	PlayerGrid(String n) {
@@ -211,6 +251,14 @@ public:
 		Mat displayBOB;
 		displayground.copyTo(displayBOB);
 		resizeBackground(displayBOB, 1920, 900);
+		if (activeMessage) {
+			Point cornerTL = Point(0, 0);
+			Point cornerBR = Point(1920, 900);
+			vector<Point> points;
+			points.push_back(cornerTL);
+			points.push_back(cornerBR);
+			setLabel(displayBOB, activeMessageStr, points);
+		}
 		imshow(name, displayBOB);
 	}
 
@@ -229,8 +277,8 @@ public:
 		grid.shoot(status, x, y);
 	}
 
-	void preShoot(int x, int y) {
-		grid.preShoot(x, y);
+	void preShoot(int type, int x, int y) {
+		grid.preShoot(type, x, y);
 	}
 
 	void scout(bool status, int x, int y) {
@@ -239,6 +287,11 @@ public:
 
 	void addBoat(int size, int locationX, int locationY, bool rotated) {
 		boats.push_back(shipDisplayer(displayground, size, locationX, locationY, rotated));
+	}
+
+	void sendMessage(string message) {
+		thread t(&PlayerGrid::messageHandler, this, message);
+		t.detach();
 	}
 };
 
