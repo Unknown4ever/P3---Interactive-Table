@@ -50,7 +50,7 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 		vector<Vec3f> circles;
 
 		//Thresholding definition of circle
-		HoughCircles(scr_gray, circles, HOUGH_GRADIENT, 1, scr_gray.rows / 8, 14, 17, 5, 17);
+		HoughCircles(scr_gray, circles, HOUGH_GRADIENT, 1, scr_gray.rows / 8, 14, 18, 5, 17);
 		
 
 		if (!(circles.empty())) {
@@ -64,8 +64,8 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 	}
 
 	//Noting the circle
-	cout << "BBOX: " << bBox.height << endl; 
-	if (circleCount > 6 & bBox.height < image.rows/9) {
+	cout << "BBOX: " << bBox.height << ", " << image.rows << endl; 
+	if (circleCount > 4 & bBox.height < image.rows/8.7 & bBox.width < image.cols/17) {
 		cout << "it a circle!" << endl;
 		shotShape = 2;
 		foundShape = true;
@@ -100,7 +100,7 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 		
 
 		//square
-		if (bwPixelRatio > 0.7) {
+		if (bwPixelRatio > 0.8) {
 			cout << "It a square!" << endl;
 			double ratio = 0.00;
 			//Ship is vertical
@@ -132,7 +132,7 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 			cout << "Length: " << curveLength << endl;
 
 			//Triangle shot aka Big bomb
-			if (foundShape == false & 1.4 < curveLength & curveLength < 1.75) {
+			if (foundShape == false & 1.4 < curveLength & curveLength < 1.75 & circleCount < 3) {
 				cout << "it a triangle" << endl;
 				shotShape = 4;
 				foundShape = true;
