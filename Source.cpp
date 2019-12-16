@@ -230,9 +230,6 @@ int main()
 		while (inputGo == false)
 		{
 			vector<int> shot;
-			Mat image;
-			cap >> image;
-			//gridfinder.findGrid(image);
 			shot = scanForShot(cap, gridfinder);
 			if (!shot.empty()) {
 				player[enemyPlayer].playerGrid.preShoot(shot.at(0), shot.at(1));
