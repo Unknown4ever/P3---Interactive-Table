@@ -101,20 +101,6 @@ Mat makeGrayMask(Mat image) {
 	return grayim;
 }
 
-void setLabel(Mat& im, const string label, vector<Point>& contour) {
-	int fontface = FONT_HERSHEY_SIMPLEX;
-	double scale = 0.4;
-	int thickness = 1;
-	int baseline = 0;
-
-	Size text = getTextSize(label, fontface, scale, thickness, &baseline);
-	Rect r = boundingRect(contour);
-
-	Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
-	rectangle(im, pt + Point(0, baseline), pt + Point(text.width, -text.height), CV_RGB(255, 255, 255), FILLED);
-	putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
-}
-
 vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 	vector<vector<int>> boats;
 	Mat lineFoto;
