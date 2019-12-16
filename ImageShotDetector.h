@@ -1,6 +1,7 @@
 #pragma once
 #include "ImageShipDetector.h"
 #include "GridCropper.h"
+#include <cmath>
 
 
 Mat makeFineMask(Mat image, int lowLim1[], int upLim1[]) {
@@ -26,8 +27,7 @@ Mat makeFineMask(Mat image, int lowLim1[], int upLim1[]) {
 
 vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, VideoCapture cap, Gridfinder& gridfinder) {
 	Rect bBox = boundingRect(contours.at(0));
-	int x = 0;
-	int y = 0;
+	
 	int shotShape = 0;
 
 	int circleCount = 0;
@@ -47,69 +47,108 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 		//Isolation of colour
 		inRange(mask, Scalar(40, 50, 0), Scalar(90, 240, 240), mask);
 		bitwise_and(scr_gray, mask, scr_gray);
-
-		
-
 		vector<Vec3f> circles;
 
-		imshow("Circle images", scr_gray);
-
 		//Thresholding definition of circle
-		HoughCircles(scr_gray, circles, HOUGH_GRADIENT, 1, scr_gray.rows / 8, 14, 13, 10, 17);
+		HoughCircles(scr_gray, circles, HOUGH_GRADIENT, 1, scr_gray.rows / 8, 14, 17, 5, 17);
+		
 
 		if (!(circles.empty())) {
 			circleCount++;
+			Point center = Point(cvRound(circles.at(0)[0]), cvRound(circles.at(0)[1]));
+			int radius = cvRound(circles.at(0)[2]);
+			cout << "Center: " << center << "and radius: " << radius << endl;
+			circle(scr_gray, center, radius, Scalar(255), 2);
+			imshow("Circle images", scr_gray);
 		}
 	}
 
 	//Noting the circle
-	if (circleCount > 4) {
+	cout << "BBOX: " << bBox.height << endl; 
+	if (circleCount > 6 & bBox.height < image.rows/9) {
+		cout << "it a circle!" << endl;
 		shotShape = 2;
 		foundShape = true;
 	}
 	bool direction = false;
 
-	if (foundShape == false & edgeCount >= 4) {
+	Mat imageCopy;
+	image.copyTo(imageCopy);
+	//dilate(imageCopy, imageCopy, Mat(), Point(-1, -1), 6);
+	//erode(imageCopy, imageCopy, Mat(), Point(-1, -1), 6);
 
-		double ratio = 0.00;
-		//Ship is vertical
-		if (bBox.width < bBox.height) {
-			ratio = double(bBox.height) / double(bBox.width);
-			direction = true;
-		}
-		//Ship is horisontal
-		else {
-			ratio = double(bBox.width) / double(bBox.height);
-			direction = false;
-		}
-		//Strafe run
-		if (float(ratio) > 1.8) {
-			shotShape = 5;
-			foundShape = true;
-		}
-		//Regular shot
-		else {
-		shotShape = 1;
-		foundShape = true;
-		}
-	}
+	int x = 0;
+	int y = 0;
 
-	//Triangle shot aka Big bomb
-	if (foundShape == false & edgeCount == 3) {
-		cout << "it a triangle" << endl;
-		shotShape = 4;
-		foundShape = true;
-		x = 1;
-		y = 1;
-	}
+	if (foundShape == false) {
+		int blackPixels = 0, whitePixels = 0, averageX = 0, averageY = 0;
+		for (int xShape = 0; xShape < bBox.width; xShape++){
+			for (int yShape = 0; yShape < bBox.height; yShape++){
+				if (imageCopy.at<uchar>(yShape + bBox.y, xShape + bBox.x) < 30) {
+					blackPixels++;
+				}
+				else {
+					whitePixels++;
+					averageY += yShape + bBox.y;
+					averageX += xShape + bBox.x;
+				}
+			}
+		}
+		double bwPixelRatio = 0.00;
+		bwPixelRatio = double(whitePixels) / double(double(whitePixels) + double(blackPixels));
+		
+		
 
-	//Plus shot aka cross shot
-	if (foundShape == false & edgeCount > 4) {
-		cout << "it a cross" << endl;
-		shotShape = 3;
-		foundShape = true;
-		x = 1;
-		y = 1;
+		//square
+		if (bwPixelRatio > 0.7) {
+			cout << "It a square!" << endl;
+			double ratio = 0.00;
+			//Ship is vertical
+			if (bBox.width < bBox.height) {
+				ratio = double(bBox.height) / double(bBox.width);
+				direction = true;
+			}
+			//Ship is horisontal
+			else {
+				ratio = double(bBox.width) / double(bBox.height);
+				direction = false;
+			}
+			//Strafe run
+			if (float(ratio) > 1.8) {
+				shotShape = 5;
+				foundShape = true;
+			}
+			//Regular shot
+			else {
+				shotShape = 1;
+				foundShape = true;
+			}
+		}
+		
+		if (foundShape == false) {
+			double curveLength = 0.00;
+			curveLength = arcLength(contours.at(0), true);
+			curveLength /= double(double(bBox.width) + double(bBox.height));
+			cout << "Length: " << curveLength << endl;
+
+			//Triangle shot aka Big bomb
+			if (foundShape == false & 1.4 < curveLength & curveLength < 1.75) {
+				cout << "it a triangle" << endl;
+				shotShape = 4;
+				foundShape = true;
+				//x = 1;
+				//y = 1;
+			}
+
+			//Plus shot aka cross shot
+			else if (foundShape == false) {
+				cout << "it a cross" << endl;
+				shotShape = 3;
+				foundShape = true;
+				x = 1;
+				y = 1;
+			}
+		}
 	}
 
 	//Part that finds the position of the shot
@@ -126,14 +165,16 @@ vector <int> findShot(int edgeCount, vector<vector<Point>> contours, Mat image, 
 	//Find x and y
 	//Find x
 	for (int j = 0; j < vlines.size() - 1; j++) {
-		if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
-			x = j;
+		if (vlines.at(j) < bBox.x & bBox.x <= vlines.at(j + 1)) {
+			cout << "setting x to: " << j << ", from: " << x << endl;
+			x += j;
 		}
 	}
 	//Find y
 	for (int j = 0; j < hlines.size() - 1; j++) {
-		if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
-			y = j;
+		if (hlines.at(j) < bBox.y & bBox.y <= hlines.at(j + 1)) {
+			cout << "setting y to: " << j << ", from: " << y << endl;
+			y += j;
 		}
 	}
 	if (x > 19) x = 19;
@@ -183,7 +224,9 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder& gridfinder) {
 	GaussianBlur(mask, mask, Size(9, 9), 2, 2);
 
 	mask = makeFineMask(mask, lowLim, upLim);
-	dilate(mask, mask, Mat(), Point(-1, -1), 1);
+	dilate(mask, mask, Mat(), Point(-1, -1), 2);
+	dilate(mask, mask, Mat(), Point(-1, -1), 4);
+	erode(mask, mask, Mat(), Point(-1, -1), 4);
 
 	for (int x = 0; x < mask.cols; x++) {
 		mask.at<uchar>(0, x) = 0;
@@ -204,7 +247,7 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder& gridfinder) {
 		vector<Point> approx;
 		approxPolyDP(Mat(contours.at(0)), approx, arcLength(Mat(contours.at(0)), true)*0.02, true);
 		//cout << "area: " << fabs(contourArea(contours.at(0))) << endl;
-		if (!(fabs(contourArea(contours.at(0))) < 5 /*|| !isContourConvex(approx)*/)) {
+		if (!(fabs(contourArea(contours.at(i))) < 10 /*|| !isContourConvex(approx)*/)) {
 			new_contours.push_back(contours.at(0));
 			//cout << "Contour: " << new_contours.at(0) << endl;
 		}
@@ -215,7 +258,7 @@ vector<int> scanForShot(VideoCapture cap, Gridfinder& gridfinder) {
 	vector<int> shot;
 	if (!(contours.empty())) {
 		int edgeCount = shapeDetection(contours);
-		shot = findShot(edgeCount, contours, image, cap, gridfinder);
+		shot = findShot(edgeCount, contours, mask, cap, gridfinder);
 	}
 	return shot;
 }

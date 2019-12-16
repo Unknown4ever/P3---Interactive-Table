@@ -145,10 +145,10 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 
 			//Part that finds the size of the ship
 			vector<vector<double>> boatRatios;
-			boatRatios.push_back(vector<double>{ 2, 0 });
-			boatRatios.push_back(vector<double>{ 3, 2.5 });
-			boatRatios.push_back(vector<double>{ 4, 3.5 });
-			boatRatios.push_back(vector<double>{ 5, 5.5 });
+			boatRatios.push_back(vector<double>{ 2, 0 }); //Anything with a reatio greater than this can be a scout
+			boatRatios.push_back(vector<double>{ 3, 2.5 }); //--"-- Battleship
+			boatRatios.push_back(vector<double>{ 4, 3.5 }); //Submarine
+			boatRatios.push_back(vector<double>{ 5, 5.0 }); //Carrier
 
 			double bestFit = 10;
 			int boatSize;
@@ -177,13 +177,13 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 			if (direction == true) {
 				//Find x
 				for (int j = 0; j < vlines.size() - 1; j++) {
-					if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
+					if (vlines.at(j) <= bBox.x & bBox.x <= vlines.at(j + 1)) {
 						x = j;
 					}
 				}
 				//Find y
 				for (int j = 0; j < hlines.size() - 1; j++) {
-					if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
+					if (hlines.at(j) <= bBox.y & bBox.y <= hlines.at(j + 1)) {
 						y = j;
 					}
 				}
@@ -192,13 +192,13 @@ vector<vector<int>> findBoats(vector<vector<Point>> contours, Mat image) {
 			else {
 				//Find x
 				for (int j = 0; j < vlines.size() - 1; j++) {
-					if (vlines.at(j) < bBox.x & bBox.x < vlines.at(j + 1)) {
+					if (vlines.at(j) <= bBox.x & bBox.x <= vlines.at(j + 1)) {
 						x = j;
 					}
 				}
 				//Find y
 				for (int j = 0; j < hlines.size() - 1; j++) {
-					if (hlines.at(j) < bBox.y & bBox.y < hlines.at(j + 1)) {
+					if (hlines.at(j) <= bBox.y & bBox.y <= hlines.at(j + 1)) {
 						y = j;
 					}
 				}
@@ -259,10 +259,15 @@ void printBoats(vector<vector<int>> boats) {
 vector<vector<int>> scanForBoats(Mat image) {
 	Mat mask;
 	image.copyTo(mask);
-	int upLim[] = { 80,220,240 };
-	int lowLim[] = { 30,50,0 };
+	//int upLim[] = { 80,220,240 };
+	//int lowLim[] = { 30,50,0 };
 	//mask = makeGreenMask(mask);
-	mask = makeGrayMask(mask);
+	//mask = makeGrayMask(mask);
+	int upLim[] = { 90,240,200 };
+	int lowLim[] = { 40,50,0 };
+	GaussianBlur(mask, mask, Size(9, 9), 2, 2);
+	mask = makeMask(mask, lowLim, upLim);
+	dilate(mask, mask, Mat(), Point(-1, -1), 1);
 
 	imshow("Ship detect: mask", mask);
 	vector<vector<int>> boats;
