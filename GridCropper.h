@@ -134,7 +134,9 @@ public:
 		for (int i = 0; i < contours.size(); i += 2) {
 			gridCorner corner;
 			corner.bBox = boundingRect(contours.at(i));
-			cornerBoxes.push_back(corner);
+			if (!(corner.bBox.height > double(corner.bBox.width) * 1.2) & !(corner.bBox.height < double(corner.bBox.width) * 0.8)) {
+				cornerBoxes.push_back(corner);
+			}
 		}
 
 		if (cornerBoxes.size()>3) {
