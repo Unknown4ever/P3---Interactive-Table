@@ -51,7 +51,7 @@ struct SHIP {
 	int length;
 	//Coordinates of those points
 	POINT onGrid[4]; //0-5 max length of biggest ship
-	//Whether or not those points are a "hit"
+					 //Whether or not those points are a "hit"
 	bool hitFlag[4];
 }ship[SHIP_TYPES];
 
@@ -103,7 +103,7 @@ int main()
 	}
 	cv::destroyWindow("Livefeed");
 	inputGo = false;
-	
+
 	Mat imagegrid;
 	cap >> imagegrid;
 	gridfinder.findGrid(imagegrid);
@@ -127,7 +127,7 @@ int main()
 
 		player[aPlayer].playerGrid.display();
 		cv::waitKey(1);
-		
+
 		auto start = high_resolution_clock::now();
 		vector<vector<int>> boats;
 		system("cls");
@@ -166,17 +166,17 @@ int main()
 		{
 			//cout << "placing boat of size: " << boats.at(i).at(2) << endl;
 			//this_thread::sleep_for(3s);
-			int this_SHIP = boats.at(i).at(2) - 2;	
-			
+			int this_SHIP = boats.at(i).at(2) - 2;
+
 			//Display board
 			//gridfinder.cropToGrid(image);
 			std::system("cls");
 			DrawBoard(aPlayer); //Displaying the board for ship placement stage
-			
-			//Get input from user and loop until good data is returned
+
+								//Get input from user and loop until good data is returned
 			PLACESHIPS aShip;
 			aShip.shipType.onGrid[0].X = -1;
-			
+
 			aShip = UserInputShipPlacement(boats.at(i));
 			//std::cout << "boat size is: " << aShip.shipType.length << endl;
 			if (aShip.shipType.onGrid[0].X != -1 && boats.at(i).at(2) > 0)
@@ -218,7 +218,7 @@ int main()
 	guessingStage = true;
 	int thisPlayer = 1;
 	do {
-		
+
 		inputGo = false;
 		//Because we are ATTACKING now, the opposite players board is the display board
 		int enemyPlayer;
@@ -274,14 +274,14 @@ int main()
 		{
 			strafeRun = true;
 		}
-		
+
 
 		// ABILITIES //
 
-//Regular shot
+		//Regular shot
 
 		if (regularShot == true) {
-			
+
 			if (player[enemyPlayer].grid[x][y] == is_SHIP) {
 				player[enemyPlayer].grid[x][y] = HIT;
 				player[enemyPlayer].playerGrid.shoot(1, x, y);
@@ -292,7 +292,7 @@ int main()
 			else
 			{
 				std::cout << "Miss" << endl;
-				player[enemyPlayer].playerGrid.shoot(2, x, y);			
+				player[enemyPlayer].playerGrid.shoot(2, x, y);
 			}
 			player[enemyPlayer].playerGrid.display();
 			cv::waitKey(1);
@@ -302,7 +302,7 @@ int main()
 		//Scout the enemy board and displays the ships for a few seconds
 		//Will be true when the correct shape is detected by the camera
 
-		if (scoutArea == true) 
+		if (scoutArea == true)
 		{
 			for (int x2 = -2; x2 < 3; x2++)
 			{
@@ -315,7 +315,7 @@ int main()
 						{
 							player[enemyPlayer].playerGrid.scout(true, x + x2, y + y2);
 						}
-						
+
 						std::cout << "ENEMY SPOTTED" << endl;
 					}
 					else if (player[enemyPlayer].grid[x + x2][y + y2] != is_SHIP)
@@ -366,12 +366,12 @@ int main()
 			}
 			player[enemyPlayer].playerGrid.display();
 			cv::waitKey(1);
-			std::this_thread::sleep_for(std::chrono::seconds(3));		
+			std::this_thread::sleep_for(std::chrono::seconds(3));
 		}
 
 		//Shoots in a 3x3 square
 
-		if (superMultiShot == true) 
+		if (superMultiShot == true)
 		{
 			for (int x2 = -1; x2 < 2; x2++)
 			{
@@ -407,7 +407,7 @@ int main()
 		if (strafeRun == true) {
 			// false = horizontal 
 			// true = vertical
-			for (int x2 = 0; x2 < 5; x2++) 
+			for (int x2 = 0; x2 < 5; x2++)
 			{
 				if (longStick == false)
 				{
@@ -444,7 +444,7 @@ int main()
 						player[enemyPlayer].grid[x][y + x2] = MISS;
 						if (!(x > 19 || x < 0 || y + x2 > 9 || y + x2 < 0))
 						{
-							player[enemyPlayer].playerGrid.shoot(1, x, y + x2);
+							player[enemyPlayer].playerGrid.shoot(2, x, y + x2);
 						}
 					}
 				}
@@ -456,7 +456,7 @@ int main()
 
 		//END OF ABILITIES //
 
-//If 0 is returned -> nobody has won yet
+		//If 0 is returned -> nobody has won yet
 		int aWin = GameOverCheck(enemyPlayer);
 		if (aWin != 0) {
 			guessingStage = false;
@@ -564,7 +564,7 @@ PLACESHIPS UserInputShipPlacement(vector<int> boat)
 	d = !bool(boat.at(3));
 	x = boat.at(0);
 	y = boat.at(1);
-	
+
 	if (d != 0 && d != 1) {
 		std::cout << "Incorrect DIRECTION value. Please enter 0 or 1 to specifiy the orientation of the ship.\n";
 		//std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -628,7 +628,7 @@ void DrawBoard(int thisPlayer)
 			//Displaying the letters
 
 			if (w == 0) {
-				
+
 				std::cout << gridLetters[h] << "  ";
 			}
 			if (w > 10) {
